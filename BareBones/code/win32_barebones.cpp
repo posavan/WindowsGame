@@ -62,6 +62,7 @@ typedef DIRECT_SOUND_CREATE(direct_sound_create);
 #pragma region Globals
 global_variable bool g_running;
 global_variable offscreen_buffer g_back_buffer;
+global_variable LPDIRECTSOUNDBUFFER g_secondary_buffer;
 #pragma endregion
 
 internal_function void Win32LoadXInput(void)
@@ -117,7 +118,7 @@ internal_function void Win32InitDSound(HWND Window, int32 samplesPerSecond, int3
 				{
 					if (SUCCEEDED(primaryBuffer->SetFormat(&waveFormat)))
 					{
-
+						OutputDebugStringA("Primary buffer format was set.\n");
 					}
 					else
 					{
@@ -139,10 +140,9 @@ internal_function void Win32InitDSound(HWND Window, int32 samplesPerSecond, int3
 			bufferDescription.dwFlags = 0;
 			bufferDescription.dwBufferBytes = bufferSize;
 			bufferDescription.lpwfxFormat = &waveFormat;
-			LPDIRECTSOUNDBUFFER secondaryBuffer;
-			if (SUCCEEDED(directSound->CreateSoundBuffer(&bufferDescription, &secondaryBuffer, 0)))
+			if (SUCCEEDED(directSound->CreateSoundBuffer(&bufferDescription, &g_secondary_buffer, 0)))
 			{
-
+				OutputDebugStringA("Primary buffer format was set.\n");
 			}
 			else
 			{
@@ -173,7 +173,7 @@ internal_function window_dimensions Win32GetWindowDimensions(HWND Window)
 	return(result);
 }
 
-internal_function void Win32RenderColor(offscreen_buffer* buffer, int blueOffset, int greenOffset)
+internal_function void Win32RenderColor(offscreen_buffer* buffer, int blueOffset, int greenOffset, int redOffset)
 {
 
 	uint8* row = (uint8*)buffer->memory;
@@ -188,9 +188,9 @@ internal_function void Win32RenderColor(offscreen_buffer* buffer, int blueOffset
 			*/
 			uint8 blue = (x + blueOffset);
 			uint8 green = (y + greenOffset);
-			uint8 red = (0);
+			uint8 red = (0 + redOffset);
 
-			*pixel++ = (blue | (green << 8));// | (red << 16));
+			*pixel++ = (blue | (green << 8) | (red << 16));
 		}
 
 		row += buffer->pitch;
@@ -216,7 +216,7 @@ internal_function void Win32ResizeDIBSection(offscreen_buffer* buffer, int width
 	buffer->info.bmiHeader.biCompression = BI_RGB;
 
 	int bitmapMemorySize = (buffer->width * buffer->height) * bytesPerPixel;
-	buffer->memory = VirtualAlloc(0, bitmapMemorySize, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
+	buffer->memory = VirtualAlloc(0, bitmapMemorySize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 	buffer->pitch = width * bytesPerPixel;
 
 }
@@ -323,9 +323,9 @@ internal_function LRESULT CALLBACK Win32MainWindowCallback(
 		}
 
 		bool32 AltKeyDown = (LParam & (1 << 29));
-		if ((VKCode == VK_F4) && AltKeyDown) 
-		{ 
-			g_running = false; 
+		if ((VKCode == VK_F4) && AltKeyDown)
+		{
+			g_running = false;
 		}
 
 	} break;
@@ -383,10 +383,22 @@ int main(HINSTANCE Instance) {
 		{
 			HDC DeviceContext = GetDC(Window);
 
+			// Graphics Test
 			int xOffset = 0;
 			int yOffset = 0;
 
-			Win32InitDSound(Window, 48000, 48000*sizeof(int16)*2);
+			// Sound Test
+			int samplesPerSec = 48000;
+			int toneHz = 256;
+			int16 toneVolume = 300;
+			uint32 runningSampleIndex = 0;
+			int squareWavePeriod = samplesPerSec / toneHz;
+			int halfSquareWavePeriod = squareWavePeriod / 2;
+			int bytesPerSample = sizeof(int16) * 2;
+			int bufferSize = samplesPerSec * bytesPerSample;
+
+			Win32InitDSound(Window, samplesPerSec, bufferSize);
+			g_secondary_buffer->Play(0, 0, DSBPLAY_LOOPING);
 
 			g_running = true;
 			while (g_running)
@@ -442,12 +454,66 @@ int main(HINSTANCE Instance) {
 				}
 
 				//add rumble
-				XINPUT_VIBRATION vibrate;
+				//XINPUT_VIBRATION vibrate;
 				//vibrate.wLeftMotorSpeed = 50000;
 				//vibrate.wRightMotorSpeed = 50000;
-				XInputSetState(0, &vibrate);
+				//XInputSetState(0, &vibrate);
 
-				Win32RenderColor(&g_back_buffer, xOffset, yOffset);
+				Win32RenderColor(&g_back_buffer, xOffset, yOffset, 0);
+
+#pragma region DirectSoundTest
+				DWORD playCursor;
+				DWORD writeCursor;
+				if (SUCCEEDED(g_secondary_buffer->GetCurrentPosition(&playCursor, &writeCursor)))
+				{
+					DWORD byteToLock = (runningSampleIndex * bytesPerSample) % bufferSize;
+					DWORD bytesToWrite;
+					if (byteToLock > playCursor)
+					{
+						bytesToWrite = (bufferSize - byteToLock);
+						bytesToWrite += playCursor;
+					}
+					else
+					{
+						bytesToWrite = playCursor - byteToLock;
+					}
+
+					VOID* Region1;
+					DWORD Region1Size;
+					VOID* Region2;
+					DWORD Region2Size;
+
+					if (SUCCEEDED(g_secondary_buffer->Lock(
+						byteToLock, bytesToWrite,
+						&Region1, &Region1Size,
+						&Region2, &Region2Size,
+						0)))
+					{
+						DWORD region1SampleCount = Region1Size / bytesPerSample;
+						int16* SampleOut = (int16*)Region1;
+						for (DWORD SampleIndex = 0; SampleIndex < region1SampleCount; ++SampleIndex)
+						{
+							int16 sampleValue = ((runningSampleIndex++ / halfSquareWavePeriod) % 2) ? toneVolume : -toneVolume;
+							*SampleOut++ = sampleValue;
+							*SampleOut++ = sampleValue;
+						}
+
+						DWORD region2SampleCount = Region2Size / bytesPerSample;
+						SampleOut = (int16*)Region2;
+						for (DWORD SampleIndex = 0; SampleIndex < region2SampleCount; ++SampleIndex)
+						{
+							int16 sampleValue = ((runningSampleIndex++ / halfSquareWavePeriod) % 2) ? toneVolume : -toneVolume;
+							*SampleOut++ = sampleValue;
+							*SampleOut++ = sampleValue;
+						}
+
+						g_secondary_buffer->Unlock(
+							Region1, Region1Size,
+							Region2, Region2Size);
+					}
+				}
+#pragma endregion
+
 				window_dimensions dimensions = Win32GetWindowDimensions(Window);
 				Win32DisplayBufferToWindow(
 					&g_back_buffer,
