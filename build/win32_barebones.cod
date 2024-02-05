@@ -12,39 +12,50 @@ INCLUDELIB OLDNAMES
 PUBLIC	?XInputGetStateStub@@YGKKPAU_XINPUT_STATE@@@Z	; XInputGetStateStub
 PUBLIC	?XInputSetStateStub@@YGKKPAU_XINPUT_VIBRATION@@@Z ; XInputSetStateStub
 CONST	SEGMENT
-$SG95349 DB	'xinput1_4.dll', 00H
-	ORG $+2
-$SG95352 DB	'XInputGetState', 00H
-	ORG $+1
-$SG95354 DB	'XInputSetState', 00H
-	ORG $+1
-$SG95375 DB	'dsound.dll', 00H
-	ORG $+1
-$SG95378 DB	'DirectSoundCreate', 00H
-	ORG $+2
-$SG95387 DB	'Primary buffer format was set.', 0aH, 00H
-$SG95390 DB	'Primary buffer format was set.', 0aH, 00H
-$SG95482 DB	'WM_CLOSE', 0aH, 00H
-	ORG $+2
-$SG95484 DB	'WM_ACTIVATEAPP', 0aH, 00H
-$SG95486 DB	'WM_DESTROY', 0aH, 00H
-$SG95494 DB	'W: ', 00H
-$SG95497 DB	'isDown ', 00H
-$SG95499 DB	'wasDown ', 00H
+$SG98385 DB	'BareBonesWindowClass', 00H
 	ORG $+3
-$SG95500 DB	0aH, 00H
-	ORG $+2
-$SG95579 DB	'BareBonesWindowClass', 00H
+$SG98388 DB	'Bare Bones', 00H
+	ORG $+1
+$SG98399 DB	'%fmspf | %ffps | %fMcpf', 0aH, 00H
 	ORG $+3
-$SG95582 DB	'Bare Bones', 00H
+$SG98133 DB	'xinput1_4.dll', 00H
+	ORG $+2
+$SG98136 DB	'XInputGetState', 00H
+	ORG $+1
+$SG98138 DB	'XInputSetState', 00H
+	ORG $+1
+$SG98159 DB	'dsound.dll', 00H
+	ORG $+1
+$SG98162 DB	'DirectSoundCreate', 00H
+	ORG $+2
+$SG98171 DB	'Primary buffer format was set.', 0aH, 00H
+$SG98174 DB	'Primary buffer format was set.', 0aH, 00H
+$SG98266 DB	'WM_CLOSE', 0aH, 00H
+	ORG $+2
+$SG98268 DB	'WM_ACTIVATEAPP', 0aH, 00H
+$SG98270 DB	'WM_DESTROY', 0aH, 00H
+$SG98278 DB	'W: ', 00H
+$SG98281 DB	'isDown ', 00H
+$SG98283 DB	'wasDown ', 00H
+	ORG $+3
+$SG98284 DB	0aH, 00H
 CONST	ENDS
 PUBLIC	_WinMain@16
+PUBLIC	___local_stdio_printf_options
+PUBLIC	__vsprintf_s_l
+PUBLIC	_vsprintf_s
 PUBLIC	_sinf
 PUBLIC	_main
+PUBLIC	??$sprintf_s@$0BAA@@@YAHAAY0BAA@DPBDZZ		; sprintf_s<256>
+PUBLIC	?_OptionsStorage@?1??__local_stdio_printf_options@@9@4_KA ; `__local_stdio_printf_options'::`2'::_OptionsStorage
 PUBLIC	__real@40c90fdb
 PUBLIC	__real@43800000
+PUBLIC	__real@447a0000
 PUBLIC	__real@46ea6000
+PUBLIC	__real@49742400
 EXTRN	__imp__OutputDebugStringA@4:PROC
+EXTRN	__imp__QueryPerformanceCounter@4:PROC
+EXTRN	__imp__QueryPerformanceFrequency@4:PROC
 EXTRN	__imp__VirtualAlloc@16:PROC
 EXTRN	__imp__VirtualFree@12:PROC
 EXTRN	__imp__GetProcAddress@8:PROC
@@ -60,18 +71,32 @@ EXTRN	__imp__GetDC@4:PROC
 EXTRN	__imp__BeginPaint@8:PROC
 EXTRN	__imp__EndPaint@8:PROC
 EXTRN	__imp__GetClientRect@8:PROC
+EXTRN	___stdio_common_vsprintf_s:PROC
 EXTRN	_sin:PROC
 EXTRN	@__security_check_cookie@4:PROC
+EXTRN	__ltod3:PROC
 EXTRN	___security_cookie:DWORD
 EXTRN	__fltused:DWORD
+;	COMDAT ?_OptionsStorage@?1??__local_stdio_printf_options@@9@4_KA
+_BSS	SEGMENT
+?_OptionsStorage@?1??__local_stdio_printf_options@@9@4_KA DQ 01H DUP (?) ; `__local_stdio_printf_options'::`2'::_OptionsStorage
+_BSS	ENDS
 _BSS	SEGMENT
 ?g_running@@3HA DD 01H DUP (?)				; g_running
 ?g_back_buffer@@3Uoffscreen_buffer@@A DB 03cH DUP (?)	; g_back_buffer
 ?g_secondary_buffer@@3PAUIDirectSoundBuffer@@A DD 01H DUP (?) ; g_secondary_buffer
 _BSS	ENDS
+;	COMDAT __real@49742400
+CONST	SEGMENT
+__real@49742400 DD 049742400r			; 1e+06
+CONST	ENDS
 ;	COMDAT __real@46ea6000
 CONST	SEGMENT
 __real@46ea6000 DD 046ea6000r			; 30000
+CONST	ENDS
+;	COMDAT __real@447a0000
+CONST	SEGMENT
+__real@447a0000 DD 0447a0000r			; 1000
 CONST	ENDS
 ;	COMDAT __real@43800000
 CONST	SEGMENT
@@ -89,7 +114,7 @@ voltbl	SEGMENT
 _volmd	DD	0ffffffffH
 	DDSymXIndex: 	FLAT:_main
 	DD	010H
-	DD	04a5H
+	DD	07ddH
 _volmd	DD	0ffffffffH
 	DDSymXIndex: 	FLAT:?Win32MainWindowCallback@@YGJPAUHWND__@@IIJ@Z
 	DD	0dH
@@ -104,780 +129,1136 @@ _volmd	DD	0ffffffffH
 	DD	0180H
 voltbl	ENDS
 ; Function compile flags: /Odtp
+; File C:\Program Files (x86)\Windows Kits\10\include\10.0.22621.0\ucrt\stdio.h
+;	COMDAT ??$sprintf_s@$0BAA@@@YAHAAY0BAA@DPBDZZ
+_TEXT	SEGMENT
+__ArgList$ = -4						; size = 4
+__Buffer$ = 8						; size = 4
+__Format$ = 12						; size = 4
+??$sprintf_s@$0BAA@@@YAHAAY0BAA@DPBDZZ PROC		; sprintf_s<256>, COMDAT
+
+; 1840 :         )
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	51		 push	 ecx
+
+; 1835 :     __DEFINE_CPP_OVERLOAD_SECURE_FUNC_0_1_ARGLIST(
+
+  00004	8d 45 10	 lea	 eax, DWORD PTR __Format$[ebp+4]
+  00007	89 45 fc	 mov	 DWORD PTR __ArgList$[ebp], eax
+  0000a	8b 4d fc	 mov	 ecx, DWORD PTR __ArgList$[ebp]
+  0000d	51		 push	 ecx
+  0000e	8b 55 0c	 mov	 edx, DWORD PTR __Format$[ebp]
+  00011	52		 push	 edx
+  00012	68 00 01 00 00	 push	 256			; 00000100H
+  00017	8b 45 08	 mov	 eax, DWORD PTR __Buffer$[ebp]
+  0001a	50		 push	 eax
+  0001b	e8 00 00 00 00	 call	 _vsprintf_s
+  00020	83 c4 10	 add	 esp, 16			; 00000010H
+  00023	8b e5		 mov	 esp, ebp
+  00025	5d		 pop	 ebp
+  00026	c3		 ret	 0
+??$sprintf_s@$0BAA@@@YAHAAY0BAA@DPBDZZ ENDP		; sprintf_s<256>
+_TEXT	ENDS
+; Function compile flags: /Odtp
 ; File w:\WindowsGame\BareBones\code\win32_barebones.cpp
 _TEXT	SEGMENT
-_Message$1 = -260					; size = 28
-_dPadRight$2 = -232					; size = 4
-_buttonStart$3 = -228					; size = 4
-_dPadUp$4 = -224					; size = 4
-_dPadDown$5 = -220					; size = 4
-_dPadLeft$6 = -216					; size = 4
-_writeCursor$7 = -212					; size = 4
-_buttonY$8 = -208					; size = 4
-_buttonX$9 = -204					; size = 4
-_buttonB$10 = -200					; size = 4
-_buttonA$11 = -196					; size = 4
-_shoulderRight$12 = -192				; size = 4
-_shoulderLeft$13 = -188					; size = 4
-_thumbRight$14 = -184					; size = 4
-_thumbLeft$15 = -180					; size = 4
-_buttonBack$16 = -176					; size = 4
-_WindowClass$ = -172					; size = 40
-$T17 = -132						; size = 8
-_dimensions$18 = -124					; size = 8
-_DeviceContext$19 = -116				; size = 4
-_targetCursor$20 = -112					; size = 4
-_inputState$21 = -108					; size = 4
-_stickRX$22 = -104					; size = 2
-_xOffset$23 = -100					; size = 4
-_yOffset$24 = -96					; size = 4
-_stickRY$25 = -92					; size = 2
-_stickLY$26 = -88					; size = 2
-_stickLX$27 = -84					; size = 2
-_Window$28 = -80					; size = 4
-_playCursor$29 = -76					; size = 4
-_ctrlIndex$30 = -72					; size = 4
-_byteToLock$31 = -68					; size = 4
-_bytesToWrite$32 = -64					; size = 4
-_pad$33 = -60						; size = 4
-_state$34 = -56						; size = 16
-_soundOutput$35 = -40					; size = 36
+_Message$1 = -600					; size = 28
+_dPadLeft$2 = -572					; size = 4
+_dPadRight$3 = -568					; size = 4
+_buttonBack$4 = -564					; size = 4
+_shoulderLeft$5 = -560					; size = 4
+_buttonStart$6 = -556					; size = 4
+_thumbRight$7 = -552					; size = 4
+_thumbLeft$8 = -548					; size = 4
+_writeCursor$9 = -544					; size = 4
+_buttonY$10 = -540					; size = 4
+_buttonX$11 = -536					; size = 4
+_buttonB$12 = -532					; size = 4
+_buttonA$13 = -528					; size = 4
+_shoulderRight$14 = -524				; size = 4
+_dPadDown$15 = -520					; size = 4
+_dPadUp$16 = -516					; size = 4
+_perfCountFreqResult$ = -512				; size = 8
+_WindowClass$ = -504					; size = 40
+_cyclesElapsed$17 = -464				; size = 8
+_dimensions$18 = -456					; size = 8
+$T19 = -448						; size = 8
+_mSPerFrame$20 = -440					; size = 4
+_fps$21 = -436						; size = 4
+_MegaCyclePerFrame$22 = -432				; size = 4
+tv563 = -428						; size = 4
+tv561 = -424						; size = 4
+_DeviceContext$23 = -420				; size = 4
+_targetCursor$24 = -416					; size = 4
+_inputState$25 = -412					; size = 4
+_stickRX$26 = -408					; size = 2
+_lastCounter$27 = -404					; size = 8
+_endCounter$28 = -396					; size = 8
+_endCycleCount$29 = -388				; size = 8
+_lastCycleCount$30 = -380				; size = 8
+_counterElapsed$31 = -372				; size = 8
+_perfCountFrequency$ = -364				; size = 8
+_xOffset$32 = -356					; size = 4
+_yOffset$33 = -352					; size = 4
+_stickLX$34 = -348					; size = 2
+_stickRY$35 = -344					; size = 2
+_stickLY$36 = -340					; size = 2
+_Window$37 = -336					; size = 4
+_playCursor$38 = -332					; size = 4
+_ctrlIndex$39 = -328					; size = 4
+_bytesToWrite$40 = -324					; size = 4
+_byteToLock$41 = -320					; size = 4
+_pad$42 = -316						; size = 4
+_state$43 = -312					; size = 16
+_soundOutput$44 = -296					; size = 36
+_buffer$45 = -260					; size = 256
 __$ArrayPad$ = -4					; size = 4
 _Instance$ = 8						; size = 4
 _main	PROC
 
-; 419  : int main(HINSTANCE Instance) {
+; 420  : int main(HINSTANCE Instance) {
 
   00000	55		 push	 ebp
   00001	8b ec		 mov	 ebp, esp
-  00003	81 ec 04 01 00
-	00		 sub	 esp, 260		; 00000104H
+  00003	81 ec 58 02 00
+	00		 sub	 esp, 600		; 00000258H
   00009	a1 00 00 00 00	 mov	 eax, DWORD PTR ___security_cookie
   0000e	33 c5		 xor	 eax, ebp
   00010	89 45 fc	 mov	 DWORD PTR __$ArrayPad$[ebp], eax
 
-; 420  : 	Win32LoadXInput();
+; 421  : 	LARGE_INTEGER perfCountFreqResult;
+; 422  : 	QueryPerformanceFrequency(&perfCountFreqResult);
 
-  00013	e8 00 00 00 00	 call	 ?Win32LoadXInput@@YAXXZ	; Win32LoadXInput
+  00013	8d 85 00 fe ff
+	ff		 lea	 eax, DWORD PTR _perfCountFreqResult$[ebp]
+  00019	50		 push	 eax
+  0001a	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__QueryPerformanceFrequency@4
 
-; 421  : 
-; 422  : 	WNDCLASSA WindowClass = {};
+; 423  : 	int64 perfCountFrequency = perfCountFreqResult.QuadPart;
 
-  00018	33 c0		 xor	 eax, eax
-  0001a	89 85 54 ff ff
+  00020	8b 8d 00 fe ff
+	ff		 mov	 ecx, DWORD PTR _perfCountFreqResult$[ebp]
+  00026	8b 95 04 fe ff
+	ff		 mov	 edx, DWORD PTR _perfCountFreqResult$[ebp+4]
+  0002c	89 8d 94 fe ff
+	ff		 mov	 DWORD PTR _perfCountFrequency$[ebp], ecx
+  00032	89 95 98 fe ff
+	ff		 mov	 DWORD PTR _perfCountFrequency$[ebp+4], edx
+
+; 424  : 	
+; 425  : 	Win32LoadXInput();
+
+  00038	e8 00 00 00 00	 call	 ?Win32LoadXInput@@YAXXZ	; Win32LoadXInput
+
+; 426  : 
+; 427  : 	WNDCLASSA WindowClass = {};
+
+  0003d	33 c0		 xor	 eax, eax
+  0003f	89 85 08 fe ff
 	ff		 mov	 DWORD PTR _WindowClass$[ebp], eax
-  00020	89 85 58 ff ff
+  00045	89 85 0c fe ff
 	ff		 mov	 DWORD PTR _WindowClass$[ebp+4], eax
-  00026	89 85 5c ff ff
+  0004b	89 85 10 fe ff
 	ff		 mov	 DWORD PTR _WindowClass$[ebp+8], eax
-  0002c	89 85 60 ff ff
+  00051	89 85 14 fe ff
 	ff		 mov	 DWORD PTR _WindowClass$[ebp+12], eax
-  00032	89 85 64 ff ff
+  00057	89 85 18 fe ff
 	ff		 mov	 DWORD PTR _WindowClass$[ebp+16], eax
-  00038	89 85 68 ff ff
+  0005d	89 85 1c fe ff
 	ff		 mov	 DWORD PTR _WindowClass$[ebp+20], eax
-  0003e	89 85 6c ff ff
+  00063	89 85 20 fe ff
 	ff		 mov	 DWORD PTR _WindowClass$[ebp+24], eax
-  00044	89 85 70 ff ff
+  00069	89 85 24 fe ff
 	ff		 mov	 DWORD PTR _WindowClass$[ebp+28], eax
-  0004a	89 85 74 ff ff
+  0006f	89 85 28 fe ff
 	ff		 mov	 DWORD PTR _WindowClass$[ebp+32], eax
-  00050	89 85 78 ff ff
+  00075	89 85 2c fe ff
 	ff		 mov	 DWORD PTR _WindowClass$[ebp+36], eax
 
-; 423  : 
-; 424  : 	Win32ResizeDIBSection(&g_back_buffer, 1280, 720);
+; 428  : 
+; 429  : 	Win32ResizeDIBSection(&g_back_buffer, 1280, 720);
 
-  00056	68 d0 02 00 00	 push	 720			; 000002d0H
-  0005b	68 00 05 00 00	 push	 1280			; 00000500H
-  00060	68 00 00 00 00	 push	 OFFSET ?g_back_buffer@@3Uoffscreen_buffer@@A
-  00065	e8 00 00 00 00	 call	 ?Win32ResizeDIBSection@@YAXPAUoffscreen_buffer@@HH@Z ; Win32ResizeDIBSection
-  0006a	83 c4 0c	 add	 esp, 12			; 0000000cH
-
-; 425  : 
-; 426  : 	WindowClass.style = CS_HREDRAW | CS_VREDRAW;
-
-  0006d	c7 85 54 ff ff
-	ff 03 00 00 00	 mov	 DWORD PTR _WindowClass$[ebp], 3
-
-; 427  : 	WindowClass.lpfnWndProc = Win32MainWindowCallback;
-
-  00077	c7 85 58 ff ff
-	ff 00 00 00 00	 mov	 DWORD PTR _WindowClass$[ebp+4], OFFSET ?Win32MainWindowCallback@@YGJPAUHWND__@@IIJ@Z ; Win32MainWindowCallback
-
-; 428  : 	WindowClass.hInstance = Instance;
-
-  00081	8b 4d 08	 mov	 ecx, DWORD PTR _Instance$[ebp]
-  00084	89 8d 64 ff ff
-	ff		 mov	 DWORD PTR _WindowClass$[ebp+16], ecx
-
-; 429  : 	WindowClass.lpszClassName = "BareBonesWindowClass";
-
-  0008a	c7 85 78 ff ff
-	ff 00 00 00 00	 mov	 DWORD PTR _WindowClass$[ebp+36], OFFSET $SG95579
+  0007b	68 d0 02 00 00	 push	 720			; 000002d0H
+  00080	68 00 05 00 00	 push	 1280			; 00000500H
+  00085	68 00 00 00 00	 push	 OFFSET ?g_back_buffer@@3Uoffscreen_buffer@@A
+  0008a	e8 00 00 00 00	 call	 ?Win32ResizeDIBSection@@YAXPAUoffscreen_buffer@@HH@Z ; Win32ResizeDIBSection
+  0008f	83 c4 0c	 add	 esp, 12			; 0000000cH
 
 ; 430  : 
-; 431  : 	if (RegisterClassA(&WindowClass))
+; 431  : 	WindowClass.style = CS_HREDRAW | CS_VREDRAW;
 
-  00094	8d 95 54 ff ff
+  00092	c7 85 08 fe ff
+	ff 03 00 00 00	 mov	 DWORD PTR _WindowClass$[ebp], 3
+
+; 432  : 	WindowClass.lpfnWndProc = Win32MainWindowCallback;
+
+  0009c	c7 85 0c fe ff
+	ff 00 00 00 00	 mov	 DWORD PTR _WindowClass$[ebp+4], OFFSET ?Win32MainWindowCallback@@YGJPAUHWND__@@IIJ@Z ; Win32MainWindowCallback
+
+; 433  : 	WindowClass.hInstance = Instance;
+
+  000a6	8b 4d 08	 mov	 ecx, DWORD PTR _Instance$[ebp]
+  000a9	89 8d 18 fe ff
+	ff		 mov	 DWORD PTR _WindowClass$[ebp+16], ecx
+
+; 434  : 	WindowClass.lpszClassName = "BareBonesWindowClass";
+
+  000af	c7 85 2c fe ff
+	ff 00 00 00 00	 mov	 DWORD PTR _WindowClass$[ebp+36], OFFSET $SG98385
+
+; 435  : 
+; 436  : 	if (RegisterClassA(&WindowClass))
+
+  000b9	8d 95 08 fe ff
 	ff		 lea	 edx, DWORD PTR _WindowClass$[ebp]
-  0009a	52		 push	 edx
-  0009b	ff 15 00 00 00
+  000bf	52		 push	 edx
+  000c0	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__RegisterClassA@4
-  000a1	0f b7 c0	 movzx	 eax, ax
-  000a4	85 c0		 test	 eax, eax
-  000a6	0f 84 f7 03 00
+  000c6	0f b7 c0	 movzx	 eax, ax
+  000c9	85 c0		 test	 eax, eax
+  000cb	0f 84 0a 07 00
 	00		 je	 $LN9@main
 
-; 432  : 	{
-; 433  : 		HWND Window = CreateWindowExA(
+; 437  : 	{
+; 438  : 		HWND Window = CreateWindowExA(
 
-  000ac	6a 00		 push	 0
-  000ae	8b 4d 08	 mov	 ecx, DWORD PTR _Instance$[ebp]
-  000b1	51		 push	 ecx
-  000b2	6a 00		 push	 0
-  000b4	6a 00		 push	 0
-  000b6	68 00 00 00 80	 push	 -2147483648		; 80000000H
-  000bb	68 00 00 00 80	 push	 -2147483648		; 80000000H
-  000c0	68 00 00 00 80	 push	 -2147483648		; 80000000H
-  000c5	68 00 00 00 80	 push	 -2147483648		; 80000000H
-  000ca	68 00 00 cf 10	 push	 282001408		; 10cf0000H
-  000cf	68 00 00 00 00	 push	 OFFSET $SG95582
-  000d4	8b 95 78 ff ff
+  000d1	6a 00		 push	 0
+  000d3	8b 4d 08	 mov	 ecx, DWORD PTR _Instance$[ebp]
+  000d6	51		 push	 ecx
+  000d7	6a 00		 push	 0
+  000d9	6a 00		 push	 0
+  000db	68 00 00 00 80	 push	 -2147483648		; 80000000H
+  000e0	68 00 00 00 80	 push	 -2147483648		; 80000000H
+  000e5	68 00 00 00 80	 push	 -2147483648		; 80000000H
+  000ea	68 00 00 00 80	 push	 -2147483648		; 80000000H
+  000ef	68 00 00 cf 10	 push	 282001408		; 10cf0000H
+  000f4	68 00 00 00 00	 push	 OFFSET $SG98388
+  000f9	8b 95 2c fe ff
 	ff		 mov	 edx, DWORD PTR _WindowClass$[ebp+36]
-  000da	52		 push	 edx
-  000db	6a 00		 push	 0
-  000dd	ff 15 00 00 00
+  000ff	52		 push	 edx
+  00100	6a 00		 push	 0
+  00102	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__CreateWindowExA@48
-  000e3	89 45 b0	 mov	 DWORD PTR _Window$28[ebp], eax
+  00108	89 85 b0 fe ff
+	ff		 mov	 DWORD PTR _Window$37[ebp], eax
 
-; 434  : 			0,
-; 435  : 			WindowClass.lpszClassName,
-; 436  : 			"Bare Bones",
-; 437  : 			WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-; 438  : 			CW_USEDEFAULT,
-; 439  : 			CW_USEDEFAULT,
-; 440  : 			CW_USEDEFAULT,
-; 441  : 			CW_USEDEFAULT,
-; 442  : 			0,
-; 443  : 			0,
-; 444  : 			Instance,
-; 445  : 			0);
-; 446  : 		if (Window)
+; 439  : 			0,
+; 440  : 			WindowClass.lpszClassName,
+; 441  : 			"Bare Bones",
+; 442  : 			WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+; 443  : 			CW_USEDEFAULT,
+; 444  : 			CW_USEDEFAULT,
+; 445  : 			CW_USEDEFAULT,
+; 446  : 			CW_USEDEFAULT,
+; 447  : 			0,
+; 448  : 			0,
+; 449  : 			Instance,
+; 450  : 			0);
+; 451  : 		if (Window)
 
-  000e6	83 7d b0 00	 cmp	 DWORD PTR _Window$28[ebp], 0
-  000ea	0f 84 b3 03 00
+  0010e	83 bd b0 fe ff
+	ff 00		 cmp	 DWORD PTR _Window$37[ebp], 0
+  00115	0f 84 c0 06 00
 	00		 je	 $LN11@main
 
-; 447  : 		{
-; 448  : 			HDC DeviceContext = GetDC(Window);
+; 452  : 		{
+; 453  : 			HDC DeviceContext = GetDC(Window);
 
-  000f0	8b 45 b0	 mov	 eax, DWORD PTR _Window$28[ebp]
-  000f3	50		 push	 eax
-  000f4	ff 15 00 00 00
+  0011b	8b 85 b0 fe ff
+	ff		 mov	 eax, DWORD PTR _Window$37[ebp]
+  00121	50		 push	 eax
+  00122	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__GetDC@4
-  000fa	89 45 8c	 mov	 DWORD PTR _DeviceContext$19[ebp], eax
+  00128	89 85 5c fe ff
+	ff		 mov	 DWORD PTR _DeviceContext$23[ebp], eax
 
-; 449  : 
-; 450  : 			// Graphics Test
-; 451  : 			int xOffset = 0;
+; 454  : 
+; 455  : 			// Graphics Test
+; 456  : 			int xOffset = 0;
 
-  000fd	c7 45 9c 00 00
-	00 00		 mov	 DWORD PTR _xOffset$23[ebp], 0
+  0012e	c7 85 9c fe ff
+	ff 00 00 00 00	 mov	 DWORD PTR _xOffset$32[ebp], 0
 
-; 452  : 			int yOffset = 0;
+; 457  : 			int yOffset = 0;
 
-  00104	c7 45 a0 00 00
-	00 00		 mov	 DWORD PTR _yOffset$24[ebp], 0
+  00138	c7 85 a0 fe ff
+	ff 00 00 00 00	 mov	 DWORD PTR _yOffset$33[ebp], 0
 
-; 453  : 
-; 454  : 			// Sound Test
-; 455  : 			sound_output soundOutput = {};
+; 458  : 
+; 459  : 			// Sound Test
+; 460  : 			sound_output soundOutput = {};
 
-  0010b	33 c9		 xor	 ecx, ecx
-  0010d	89 4d d8	 mov	 DWORD PTR _soundOutput$35[ebp], ecx
-  00110	89 4d dc	 mov	 DWORD PTR _soundOutput$35[ebp+4], ecx
-  00113	89 4d e0	 mov	 DWORD PTR _soundOutput$35[ebp+8], ecx
-  00116	89 4d e4	 mov	 DWORD PTR _soundOutput$35[ebp+12], ecx
-  00119	89 4d e8	 mov	 DWORD PTR _soundOutput$35[ebp+16], ecx
-  0011c	89 4d ec	 mov	 DWORD PTR _soundOutput$35[ebp+20], ecx
-  0011f	89 4d f0	 mov	 DWORD PTR _soundOutput$35[ebp+24], ecx
-  00122	89 4d f4	 mov	 DWORD PTR _soundOutput$35[ebp+28], ecx
-  00125	89 4d f8	 mov	 DWORD PTR _soundOutput$35[ebp+32], ecx
+  00142	33 c9		 xor	 ecx, ecx
+  00144	89 8d d8 fe ff
+	ff		 mov	 DWORD PTR _soundOutput$44[ebp], ecx
+  0014a	89 8d dc fe ff
+	ff		 mov	 DWORD PTR _soundOutput$44[ebp+4], ecx
+  00150	89 8d e0 fe ff
+	ff		 mov	 DWORD PTR _soundOutput$44[ebp+8], ecx
+  00156	89 8d e4 fe ff
+	ff		 mov	 DWORD PTR _soundOutput$44[ebp+12], ecx
+  0015c	89 8d e8 fe ff
+	ff		 mov	 DWORD PTR _soundOutput$44[ebp+16], ecx
+  00162	89 8d ec fe ff
+	ff		 mov	 DWORD PTR _soundOutput$44[ebp+20], ecx
+  00168	89 8d f0 fe ff
+	ff		 mov	 DWORD PTR _soundOutput$44[ebp+24], ecx
+  0016e	89 8d f4 fe ff
+	ff		 mov	 DWORD PTR _soundOutput$44[ebp+28], ecx
+  00174	89 8d f8 fe ff
+	ff		 mov	 DWORD PTR _soundOutput$44[ebp+32], ecx
 
-; 456  : 
-; 457  : 			soundOutput.samplesPerSec = 48000;
+; 461  : 
+; 462  : 			soundOutput.samplesPerSec = 48000;
 
-  00128	c7 45 d8 80 bb
-	00 00		 mov	 DWORD PTR _soundOutput$35[ebp], 48000 ; 0000bb80H
+  0017a	c7 85 d8 fe ff
+	ff 80 bb 00 00	 mov	 DWORD PTR _soundOutput$44[ebp], 48000 ; 0000bb80H
 
-; 458  : 			soundOutput.toneHz = 256;
+; 463  : 			soundOutput.toneHz = 256;
 
-  0012f	c7 45 dc 00 01
-	00 00		 mov	 DWORD PTR _soundOutput$35[ebp+4], 256 ; 00000100H
+  00184	c7 85 dc fe ff
+	ff 00 01 00 00	 mov	 DWORD PTR _soundOutput$44[ebp+4], 256 ; 00000100H
 
-; 459  : 			soundOutput.toneVolume = 3000;
+; 464  : 			soundOutput.toneVolume = 300;
 
-  00136	ba b8 0b 00 00	 mov	 edx, 3000		; 00000bb8H
-  0013b	66 89 55 e0	 mov	 WORD PTR _soundOutput$35[ebp+8], dx
+  0018e	ba 2c 01 00 00	 mov	 edx, 300		; 0000012cH
+  00193	66 89 95 e0 fe
+	ff ff		 mov	 WORD PTR _soundOutput$44[ebp+8], dx
 
-; 460  : 			soundOutput.runningSampleIndex = 0;
+; 465  : 			soundOutput.runningSampleIndex = 0;
 
-  0013f	c7 45 e4 00 00
-	00 00		 mov	 DWORD PTR _soundOutput$35[ebp+12], 0
+  0019a	c7 85 e4 fe ff
+	ff 00 00 00 00	 mov	 DWORD PTR _soundOutput$44[ebp+12], 0
 
-; 461  : 			soundOutput.wavePeriod = soundOutput.samplesPerSec / soundOutput.toneHz;
+; 466  : 			soundOutput.wavePeriod = soundOutput.samplesPerSec / soundOutput.toneHz;
 
-  00146	8b 45 d8	 mov	 eax, DWORD PTR _soundOutput$35[ebp]
-  00149	99		 cdq
-  0014a	f7 7d dc	 idiv	 DWORD PTR _soundOutput$35[ebp+4]
-  0014d	89 45 e8	 mov	 DWORD PTR _soundOutput$35[ebp+16], eax
+  001a4	8b 85 d8 fe ff
+	ff		 mov	 eax, DWORD PTR _soundOutput$44[ebp]
+  001aa	99		 cdq
+  001ab	f7 bd dc fe ff
+	ff		 idiv	 DWORD PTR _soundOutput$44[ebp+4]
+  001b1	89 85 e8 fe ff
+	ff		 mov	 DWORD PTR _soundOutput$44[ebp+16], eax
 
-; 462  : 			soundOutput.bytesPerSample = sizeof(int16) * 2;
+; 467  : 			soundOutput.bytesPerSample = sizeof(int16) * 2;
 
-  00150	c7 45 ec 04 00
-	00 00		 mov	 DWORD PTR _soundOutput$35[ebp+20], 4
+  001b7	c7 85 ec fe ff
+	ff 04 00 00 00	 mov	 DWORD PTR _soundOutput$44[ebp+20], 4
 
-; 463  : 			soundOutput.bufferSize = soundOutput.samplesPerSec * soundOutput.bytesPerSample;
+; 468  : 			soundOutput.bufferSize = soundOutput.samplesPerSec * soundOutput.bytesPerSample;
 
-  00157	8b 45 d8	 mov	 eax, DWORD PTR _soundOutput$35[ebp]
-  0015a	0f af 45 ec	 imul	 eax, DWORD PTR _soundOutput$35[ebp+20]
-  0015e	89 45 f0	 mov	 DWORD PTR _soundOutput$35[ebp+24], eax
+  001c1	8b 85 d8 fe ff
+	ff		 mov	 eax, DWORD PTR _soundOutput$44[ebp]
+  001c7	0f af 85 ec fe
+	ff ff		 imul	 eax, DWORD PTR _soundOutput$44[ebp+20]
+  001ce	89 85 f0 fe ff
+	ff		 mov	 DWORD PTR _soundOutput$44[ebp+24], eax
 
-; 464  : 			soundOutput.latencySample = soundOutput.samplesPerSec / 15;
+; 469  : 			soundOutput.latencySample = soundOutput.samplesPerSec / 15;
 
-  00161	8b 45 d8	 mov	 eax, DWORD PTR _soundOutput$35[ebp]
-  00164	99		 cdq
-  00165	b9 0f 00 00 00	 mov	 ecx, 15			; 0000000fH
-  0016a	f7 f9		 idiv	 ecx
-  0016c	89 45 f8	 mov	 DWORD PTR _soundOutput$35[ebp+32], eax
+  001d4	8b 85 d8 fe ff
+	ff		 mov	 eax, DWORD PTR _soundOutput$44[ebp]
+  001da	99		 cdq
+  001db	b9 0f 00 00 00	 mov	 ecx, 15			; 0000000fH
+  001e0	f7 f9		 idiv	 ecx
+  001e2	89 85 f8 fe ff
+	ff		 mov	 DWORD PTR _soundOutput$44[ebp+32], eax
 
-; 465  : 
-; 466  : 			Win32InitDSound(Window, soundOutput.samplesPerSec, soundOutput.bufferSize);
+; 470  : 
+; 471  : 			Win32InitDSound(Window, soundOutput.samplesPerSec, soundOutput.bufferSize);
 
-  0016f	8b 55 f0	 mov	 edx, DWORD PTR _soundOutput$35[ebp+24]
-  00172	52		 push	 edx
-  00173	8b 45 d8	 mov	 eax, DWORD PTR _soundOutput$35[ebp]
-  00176	50		 push	 eax
-  00177	8b 4d b0	 mov	 ecx, DWORD PTR _Window$28[ebp]
-  0017a	51		 push	 ecx
-  0017b	e8 00 00 00 00	 call	 ?Win32InitDSound@@YAXPAUHWND__@@HH@Z ; Win32InitDSound
-  00180	83 c4 0c	 add	 esp, 12			; 0000000cH
+  001e8	8b 95 f0 fe ff
+	ff		 mov	 edx, DWORD PTR _soundOutput$44[ebp+24]
+  001ee	52		 push	 edx
+  001ef	8b 85 d8 fe ff
+	ff		 mov	 eax, DWORD PTR _soundOutput$44[ebp]
+  001f5	50		 push	 eax
+  001f6	8b 8d b0 fe ff
+	ff		 mov	 ecx, DWORD PTR _Window$37[ebp]
+  001fc	51		 push	 ecx
+  001fd	e8 00 00 00 00	 call	 ?Win32InitDSound@@YAXPAUHWND__@@HH@Z ; Win32InitDSound
+  00202	83 c4 0c	 add	 esp, 12			; 0000000cH
 
-; 467  : 			Win32FillSoundBuffer(&soundOutput, 0, soundOutput.latencySample * soundOutput.bytesPerSample);
+; 472  : 			Win32FillSoundBuffer(&soundOutput, 0, soundOutput.latencySample * soundOutput.bytesPerSample);
 
-  00183	8b 55 f8	 mov	 edx, DWORD PTR _soundOutput$35[ebp+32]
-  00186	0f af 55 ec	 imul	 edx, DWORD PTR _soundOutput$35[ebp+20]
-  0018a	52		 push	 edx
-  0018b	6a 00		 push	 0
-  0018d	8d 45 d8	 lea	 eax, DWORD PTR _soundOutput$35[ebp]
-  00190	50		 push	 eax
-  00191	e8 00 00 00 00	 call	 ?Win32FillSoundBuffer@@YAXPAUsound_output@@KK@Z ; Win32FillSoundBuffer
-  00196	83 c4 0c	 add	 esp, 12			; 0000000cH
+  00205	8b 95 f8 fe ff
+	ff		 mov	 edx, DWORD PTR _soundOutput$44[ebp+32]
+  0020b	0f af 95 ec fe
+	ff ff		 imul	 edx, DWORD PTR _soundOutput$44[ebp+20]
+  00212	52		 push	 edx
+  00213	6a 00		 push	 0
+  00215	8d 85 d8 fe ff
+	ff		 lea	 eax, DWORD PTR _soundOutput$44[ebp]
+  0021b	50		 push	 eax
+  0021c	e8 00 00 00 00	 call	 ?Win32FillSoundBuffer@@YAXPAUsound_output@@KK@Z ; Win32FillSoundBuffer
+  00221	83 c4 0c	 add	 esp, 12			; 0000000cH
 
-; 468  : 			g_secondary_buffer->Play(0, 0, DSBPLAY_LOOPING);
+; 473  : 			g_secondary_buffer->Play(0, 0, DSBPLAY_LOOPING);
 
-  00199	6a 01		 push	 1
-  0019b	6a 00		 push	 0
-  0019d	6a 00		 push	 0
-  0019f	8b 0d 00 00 00
+  00224	6a 01		 push	 1
+  00226	6a 00		 push	 0
+  00228	6a 00		 push	 0
+  0022a	8b 0d 00 00 00
 	00		 mov	 ecx, DWORD PTR ?g_secondary_buffer@@3PAUIDirectSoundBuffer@@A
-  001a5	8b 11		 mov	 edx, DWORD PTR [ecx]
-  001a7	a1 00 00 00 00	 mov	 eax, DWORD PTR ?g_secondary_buffer@@3PAUIDirectSoundBuffer@@A
-  001ac	50		 push	 eax
-  001ad	8b 4a 30	 mov	 ecx, DWORD PTR [edx+48]
-  001b0	ff d1		 call	 ecx
+  00230	8b 11		 mov	 edx, DWORD PTR [ecx]
+  00232	a1 00 00 00 00	 mov	 eax, DWORD PTR ?g_secondary_buffer@@3PAUIDirectSoundBuffer@@A
+  00237	50		 push	 eax
+  00238	8b 4a 30	 mov	 ecx, DWORD PTR [edx+48]
+  0023b	ff d1		 call	 ecx
 
-; 469  : 
-; 470  : 			g_running = true;
+; 474  : 
+; 475  : 			LARGE_INTEGER lastCounter;
+; 476  : 			QueryPerformanceCounter(&lastCounter);
 
-  001b2	c7 05 00 00 00
+  0023d	8d 95 6c fe ff
+	ff		 lea	 edx, DWORD PTR _lastCounter$27[ebp]
+  00243	52		 push	 edx
+  00244	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__QueryPerformanceCounter@4
+
+; 477  : 			int64 lastCycleCount = __rdtsc();
+
+  0024a	0f 31		 rdtsc
+  0024c	89 85 84 fe ff
+	ff		 mov	 DWORD PTR _lastCycleCount$30[ebp], eax
+  00252	89 95 88 fe ff
+	ff		 mov	 DWORD PTR _lastCycleCount$30[ebp+4], edx
+
+; 478  : 
+; 479  : 			g_running = true;
+
+  00258	c7 05 00 00 00
 	00 01 00 00 00	 mov	 DWORD PTR ?g_running@@3HA, 1
 $LN2@main:
 
-; 471  : 			while (g_running)
+; 480  : 			while (g_running)
 
-  001bc	83 3d 00 00 00
+  00262	83 3d 00 00 00
 	00 00		 cmp	 DWORD PTR ?g_running@@3HA, 0
-  001c3	0f 84 da 02 00
+  00269	0f 84 6c 05 00
 	00		 je	 $LN3@main
 $LN4@main:
 
-; 472  : 			{
-; 473  : 				MSG Message;
-; 474  : 				while (PeekMessage(&Message, 0, 0, 0, PM_REMOVE))
+; 481  : 			{
+; 482  : 				MSG Message;
+; 483  : 				while (PeekMessage(&Message, 0, 0, 0, PM_REMOVE))
 
-  001c9	6a 01		 push	 1
-  001cb	6a 00		 push	 0
-  001cd	6a 00		 push	 0
-  001cf	6a 00		 push	 0
-  001d1	8d 95 fc fe ff
-	ff		 lea	 edx, DWORD PTR _Message$1[ebp]
-  001d7	52		 push	 edx
-  001d8	ff 15 00 00 00
+  0026f	6a 01		 push	 1
+  00271	6a 00		 push	 0
+  00273	6a 00		 push	 0
+  00275	6a 00		 push	 0
+  00277	8d 85 a8 fd ff
+	ff		 lea	 eax, DWORD PTR _Message$1[ebp]
+  0027d	50		 push	 eax
+  0027e	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__PeekMessageA@20
-  001de	85 c0		 test	 eax, eax
-  001e0	74 2f		 je	 SHORT $LN5@main
+  00284	85 c0		 test	 eax, eax
+  00286	74 2f		 je	 SHORT $LN5@main
 
-; 475  : 				{
-; 476  : 					if (Message.message == WM_QUIT)
+; 484  : 				{
+; 485  : 					if (Message.message == WM_QUIT)
 
-  001e2	83 bd 00 ff ff
+  00288	83 bd ac fd ff
 	ff 12		 cmp	 DWORD PTR _Message$1[ebp+4], 18 ; 00000012H
-  001e9	75 0a		 jne	 SHORT $LN13@main
+  0028f	75 0a		 jne	 SHORT $LN13@main
 
-; 477  : 					{
-; 478  : 						g_running = false;
+; 486  : 					{
+; 487  : 						g_running = false;
 
-  001eb	c7 05 00 00 00
+  00291	c7 05 00 00 00
 	00 00 00 00 00	 mov	 DWORD PTR ?g_running@@3HA, 0
 $LN13@main:
 
-; 479  : 					}
-; 480  : 
-; 481  : 					TranslateMessage(&Message);
+; 488  : 					}
+; 489  : 
+; 490  : 					TranslateMessage(&Message);
 
-  001f5	8d 85 fc fe ff
-	ff		 lea	 eax, DWORD PTR _Message$1[ebp]
-  001fb	50		 push	 eax
-  001fc	ff 15 00 00 00
+  0029b	8d 8d a8 fd ff
+	ff		 lea	 ecx, DWORD PTR _Message$1[ebp]
+  002a1	51		 push	 ecx
+  002a2	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__TranslateMessage@4
 
-; 482  : 					DispatchMessageA(&Message);
+; 491  : 					DispatchMessageA(&Message);
 
-  00202	8d 8d fc fe ff
-	ff		 lea	 ecx, DWORD PTR _Message$1[ebp]
-  00208	51		 push	 ecx
-  00209	ff 15 00 00 00
+  002a8	8d 95 a8 fd ff
+	ff		 lea	 edx, DWORD PTR _Message$1[ebp]
+  002ae	52		 push	 edx
+  002af	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__DispatchMessageA@4
 
-; 483  : 				}
+; 492  : 				}
 
-  0020f	eb b8		 jmp	 SHORT $LN4@main
+  002b5	eb b8		 jmp	 SHORT $LN4@main
 $LN5@main:
 
-; 484  : 
-; 485  : 				// Controller
-; 486  : 				for (DWORD ctrlIndex = 0; ctrlIndex < XUSER_MAX_COUNT; ++ctrlIndex)
+; 493  : 
+; 494  : 				// Controller
+; 495  : 				for (DWORD ctrlIndex = 0; ctrlIndex < XUSER_MAX_COUNT; ++ctrlIndex)
 
-  00211	c7 45 b8 00 00
-	00 00		 mov	 DWORD PTR _ctrlIndex$30[ebp], 0
-  00218	eb 09		 jmp	 SHORT $LN8@main
+  002b7	c7 85 b8 fe ff
+	ff 00 00 00 00	 mov	 DWORD PTR _ctrlIndex$39[ebp], 0
+  002c1	eb 0f		 jmp	 SHORT $LN8@main
 $LN6@main:
-  0021a	8b 55 b8	 mov	 edx, DWORD PTR _ctrlIndex$30[ebp]
-  0021d	83 c2 01	 add	 edx, 1
-  00220	89 55 b8	 mov	 DWORD PTR _ctrlIndex$30[ebp], edx
+  002c3	8b 85 b8 fe ff
+	ff		 mov	 eax, DWORD PTR _ctrlIndex$39[ebp]
+  002c9	83 c0 01	 add	 eax, 1
+  002cc	89 85 b8 fe ff
+	ff		 mov	 DWORD PTR _ctrlIndex$39[ebp], eax
 $LN8@main:
-  00223	83 7d b8 04	 cmp	 DWORD PTR _ctrlIndex$30[ebp], 4
-  00227	0f 83 91 01 00
+  002d2	83 bd b8 fe ff
+	ff 04		 cmp	 DWORD PTR _ctrlIndex$39[ebp], 4
+  002d9	0f 83 07 02 00
 	00		 jae	 $LN7@main
 
-; 487  : 				{
-; 488  : 					XINPUT_STATE state;
-; 489  : 					DWORD inputState = XInputGetState(ctrlIndex, &state);
+; 496  : 				{
+; 497  : 					XINPUT_STATE state;
+; 498  : 					DWORD inputState = XInputGetState(ctrlIndex, &state);
 
-  0022d	8d 45 c8	 lea	 eax, DWORD PTR _state$34[ebp]
-  00230	50		 push	 eax
-  00231	8b 4d b8	 mov	 ecx, DWORD PTR _ctrlIndex$30[ebp]
-  00234	51		 push	 ecx
-  00235	ff 15 00 00 00
+  002df	8d 8d c8 fe ff
+	ff		 lea	 ecx, DWORD PTR _state$43[ebp]
+  002e5	51		 push	 ecx
+  002e6	8b 95 b8 fe ff
+	ff		 mov	 edx, DWORD PTR _ctrlIndex$39[ebp]
+  002ec	52		 push	 edx
+  002ed	ff 15 00 00 00
 	00		 call	 DWORD PTR ?xInputGetState_@@3P6GKKPAU_XINPUT_STATE@@@ZA
-  0023b	89 45 94	 mov	 DWORD PTR _inputState$21[ebp], eax
+  002f3	89 85 64 fe ff
+	ff		 mov	 DWORD PTR _inputState$25[ebp], eax
 
-; 490  : 
-; 491  : 					// Controller Mapping
-; 492  : 					if (inputState == ERROR_SUCCESS)
+; 499  : 
+; 500  : 					// Controller Mapping
+; 501  : 					if (inputState == ERROR_SUCCESS)
 
-  0023e	83 7d 94 00	 cmp	 DWORD PTR _inputState$21[ebp], 0
-  00242	0f 85 71 01 00
+  002f9	83 bd 64 fe ff
+	ff 00		 cmp	 DWORD PTR _inputState$25[ebp], 0
+  00300	0f 85 db 01 00
 	00		 jne	 $LN14@main
 
-; 493  : 					{
-; 494  : 						// This controller is plugged in
-; 495  : 						XINPUT_GAMEPAD* pad = &state.Gamepad;
+; 502  : 					{
+; 503  : 						// This controller is plugged in
+; 504  : 						XINPUT_GAMEPAD* pad = &state.Gamepad;
 
-  00248	8d 55 cc	 lea	 edx, DWORD PTR _state$34[ebp+4]
-  0024b	89 55 c4	 mov	 DWORD PTR _pad$33[ebp], edx
+  00306	8d 85 cc fe ff
+	ff		 lea	 eax, DWORD PTR _state$43[ebp+4]
+  0030c	89 85 c4 fe ff
+	ff		 mov	 DWORD PTR _pad$42[ebp], eax
 
-; 496  : 
-; 497  : 						bool32 dPadUp = (pad->wButtons & XINPUT_GAMEPAD_DPAD_UP);
+; 505  : 
+; 506  : 						bool32 dPadUp = (pad->wButtons & XINPUT_GAMEPAD_DPAD_UP);
 
-  0024e	8b 45 c4	 mov	 eax, DWORD PTR _pad$33[ebp]
-  00251	0f b7 08	 movzx	 ecx, WORD PTR [eax]
-  00254	83 e1 01	 and	 ecx, 1
-  00257	89 8d 20 ff ff
-	ff		 mov	 DWORD PTR _dPadUp$4[ebp], ecx
+  00312	8b 8d c4 fe ff
+	ff		 mov	 ecx, DWORD PTR _pad$42[ebp]
+  00318	0f b7 11	 movzx	 edx, WORD PTR [ecx]
+  0031b	83 e2 01	 and	 edx, 1
+  0031e	89 95 fc fd ff
+	ff		 mov	 DWORD PTR _dPadUp$16[ebp], edx
 
-; 498  : 						bool32 dPadDown = (pad->wButtons & XINPUT_GAMEPAD_DPAD_DOWN);
+; 507  : 						bool32 dPadDown = (pad->wButtons & XINPUT_GAMEPAD_DPAD_DOWN);
 
-  0025d	8b 55 c4	 mov	 edx, DWORD PTR _pad$33[ebp]
-  00260	0f b7 02	 movzx	 eax, WORD PTR [edx]
-  00263	83 e0 02	 and	 eax, 2
-  00266	89 85 24 ff ff
-	ff		 mov	 DWORD PTR _dPadDown$5[ebp], eax
+  00324	8b 85 c4 fe ff
+	ff		 mov	 eax, DWORD PTR _pad$42[ebp]
+  0032a	0f b7 08	 movzx	 ecx, WORD PTR [eax]
+  0032d	83 e1 02	 and	 ecx, 2
+  00330	89 8d f8 fd ff
+	ff		 mov	 DWORD PTR _dPadDown$15[ebp], ecx
 
-; 499  : 						bool32 dPadLeft = (pad->wButtons & XINPUT_GAMEPAD_DPAD_LEFT);
+; 508  : 						bool32 dPadLeft = (pad->wButtons & XINPUT_GAMEPAD_DPAD_LEFT);
 
-  0026c	8b 4d c4	 mov	 ecx, DWORD PTR _pad$33[ebp]
-  0026f	0f b7 11	 movzx	 edx, WORD PTR [ecx]
-  00272	83 e2 04	 and	 edx, 4
-  00275	89 95 28 ff ff
-	ff		 mov	 DWORD PTR _dPadLeft$6[ebp], edx
+  00336	8b 95 c4 fe ff
+	ff		 mov	 edx, DWORD PTR _pad$42[ebp]
+  0033c	0f b7 02	 movzx	 eax, WORD PTR [edx]
+  0033f	83 e0 04	 and	 eax, 4
+  00342	89 85 c4 fd ff
+	ff		 mov	 DWORD PTR _dPadLeft$2[ebp], eax
 
-; 500  : 						bool32 dPadRight = (pad->wButtons & XINPUT_GAMEPAD_DPAD_RIGHT);
+; 509  : 						bool32 dPadRight = (pad->wButtons & XINPUT_GAMEPAD_DPAD_RIGHT);
 
-  0027b	8b 45 c4	 mov	 eax, DWORD PTR _pad$33[ebp]
-  0027e	0f b7 08	 movzx	 ecx, WORD PTR [eax]
-  00281	83 e1 08	 and	 ecx, 8
-  00284	89 8d 18 ff ff
-	ff		 mov	 DWORD PTR _dPadRight$2[ebp], ecx
+  00348	8b 8d c4 fe ff
+	ff		 mov	 ecx, DWORD PTR _pad$42[ebp]
+  0034e	0f b7 11	 movzx	 edx, WORD PTR [ecx]
+  00351	83 e2 08	 and	 edx, 8
+  00354	89 95 c8 fd ff
+	ff		 mov	 DWORD PTR _dPadRight$3[ebp], edx
 
-; 501  : 						bool32 buttonStart = (pad->wButtons & XINPUT_GAMEPAD_START);
+; 510  : 						bool32 buttonStart = (pad->wButtons & XINPUT_GAMEPAD_START);
 
-  0028a	8b 55 c4	 mov	 edx, DWORD PTR _pad$33[ebp]
-  0028d	0f b7 02	 movzx	 eax, WORD PTR [edx]
-  00290	83 e0 10	 and	 eax, 16			; 00000010H
-  00293	89 85 1c ff ff
-	ff		 mov	 DWORD PTR _buttonStart$3[ebp], eax
+  0035a	8b 85 c4 fe ff
+	ff		 mov	 eax, DWORD PTR _pad$42[ebp]
+  00360	0f b7 08	 movzx	 ecx, WORD PTR [eax]
+  00363	83 e1 10	 and	 ecx, 16			; 00000010H
+  00366	89 8d d4 fd ff
+	ff		 mov	 DWORD PTR _buttonStart$6[ebp], ecx
 
-; 502  : 						bool32 buttonBack = (pad->wButtons & XINPUT_GAMEPAD_BACK);
+; 511  : 						bool32 buttonBack = (pad->wButtons & XINPUT_GAMEPAD_BACK);
 
-  00299	8b 4d c4	 mov	 ecx, DWORD PTR _pad$33[ebp]
-  0029c	0f b7 11	 movzx	 edx, WORD PTR [ecx]
-  0029f	83 e2 20	 and	 edx, 32			; 00000020H
-  002a2	89 95 50 ff ff
-	ff		 mov	 DWORD PTR _buttonBack$16[ebp], edx
+  0036c	8b 95 c4 fe ff
+	ff		 mov	 edx, DWORD PTR _pad$42[ebp]
+  00372	0f b7 02	 movzx	 eax, WORD PTR [edx]
+  00375	83 e0 20	 and	 eax, 32			; 00000020H
+  00378	89 85 cc fd ff
+	ff		 mov	 DWORD PTR _buttonBack$4[ebp], eax
 
-; 503  : 						bool32 thumbLeft = (pad->wButtons & XINPUT_GAMEPAD_LEFT_THUMB);
+; 512  : 						bool32 thumbLeft = (pad->wButtons & XINPUT_GAMEPAD_LEFT_THUMB);
 
-  002a8	8b 45 c4	 mov	 eax, DWORD PTR _pad$33[ebp]
-  002ab	0f b7 08	 movzx	 ecx, WORD PTR [eax]
-  002ae	83 e1 40	 and	 ecx, 64			; 00000040H
-  002b1	89 8d 4c ff ff
-	ff		 mov	 DWORD PTR _thumbLeft$15[ebp], ecx
+  0037e	8b 8d c4 fe ff
+	ff		 mov	 ecx, DWORD PTR _pad$42[ebp]
+  00384	0f b7 11	 movzx	 edx, WORD PTR [ecx]
+  00387	83 e2 40	 and	 edx, 64			; 00000040H
+  0038a	89 95 dc fd ff
+	ff		 mov	 DWORD PTR _thumbLeft$8[ebp], edx
 
-; 504  : 						bool32 thumbRight = (pad->wButtons & XINPUT_GAMEPAD_RIGHT_THUMB);
+; 513  : 						bool32 thumbRight = (pad->wButtons & XINPUT_GAMEPAD_RIGHT_THUMB);
 
-  002b7	8b 55 c4	 mov	 edx, DWORD PTR _pad$33[ebp]
-  002ba	0f b7 02	 movzx	 eax, WORD PTR [edx]
-  002bd	25 80 00 00 00	 and	 eax, 128		; 00000080H
-  002c2	89 85 48 ff ff
-	ff		 mov	 DWORD PTR _thumbRight$14[ebp], eax
+  00390	8b 85 c4 fe ff
+	ff		 mov	 eax, DWORD PTR _pad$42[ebp]
+  00396	0f b7 08	 movzx	 ecx, WORD PTR [eax]
+  00399	81 e1 80 00 00
+	00		 and	 ecx, 128		; 00000080H
+  0039f	89 8d d8 fd ff
+	ff		 mov	 DWORD PTR _thumbRight$7[ebp], ecx
 
-; 505  : 						bool32 shoulderLeft = (pad->wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER);
+; 514  : 						bool32 shoulderLeft = (pad->wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER);
 
-  002c8	8b 4d c4	 mov	 ecx, DWORD PTR _pad$33[ebp]
-  002cb	0f b7 11	 movzx	 edx, WORD PTR [ecx]
-  002ce	81 e2 00 01 00
-	00		 and	 edx, 256		; 00000100H
-  002d4	89 95 44 ff ff
-	ff		 mov	 DWORD PTR _shoulderLeft$13[ebp], edx
+  003a5	8b 95 c4 fe ff
+	ff		 mov	 edx, DWORD PTR _pad$42[ebp]
+  003ab	0f b7 02	 movzx	 eax, WORD PTR [edx]
+  003ae	25 00 01 00 00	 and	 eax, 256		; 00000100H
+  003b3	89 85 d0 fd ff
+	ff		 mov	 DWORD PTR _shoulderLeft$5[ebp], eax
 
-; 506  : 						bool32 shoulderRight = (pad->wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER);
+; 515  : 						bool32 shoulderRight = (pad->wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER);
 
-  002da	8b 45 c4	 mov	 eax, DWORD PTR _pad$33[ebp]
-  002dd	0f b7 08	 movzx	 ecx, WORD PTR [eax]
-  002e0	81 e1 00 02 00
-	00		 and	 ecx, 512		; 00000200H
-  002e6	89 8d 40 ff ff
-	ff		 mov	 DWORD PTR _shoulderRight$12[ebp], ecx
+  003b9	8b 8d c4 fe ff
+	ff		 mov	 ecx, DWORD PTR _pad$42[ebp]
+  003bf	0f b7 11	 movzx	 edx, WORD PTR [ecx]
+  003c2	81 e2 00 02 00
+	00		 and	 edx, 512		; 00000200H
+  003c8	89 95 f4 fd ff
+	ff		 mov	 DWORD PTR _shoulderRight$14[ebp], edx
 
-; 507  : 						bool32 buttonA = (pad->wButtons & XINPUT_GAMEPAD_A);
+; 516  : 						bool32 buttonA = (pad->wButtons & XINPUT_GAMEPAD_A);
 
-  002ec	8b 55 c4	 mov	 edx, DWORD PTR _pad$33[ebp]
-  002ef	0f b7 02	 movzx	 eax, WORD PTR [edx]
-  002f2	25 00 10 00 00	 and	 eax, 4096		; 00001000H
-  002f7	89 85 3c ff ff
-	ff		 mov	 DWORD PTR _buttonA$11[ebp], eax
+  003ce	8b 85 c4 fe ff
+	ff		 mov	 eax, DWORD PTR _pad$42[ebp]
+  003d4	0f b7 08	 movzx	 ecx, WORD PTR [eax]
+  003d7	81 e1 00 10 00
+	00		 and	 ecx, 4096		; 00001000H
+  003dd	89 8d f0 fd ff
+	ff		 mov	 DWORD PTR _buttonA$13[ebp], ecx
 
-; 508  : 						bool32 buttonB = (pad->wButtons & XINPUT_GAMEPAD_B);
+; 517  : 						bool32 buttonB = (pad->wButtons & XINPUT_GAMEPAD_B);
 
-  002fd	8b 4d c4	 mov	 ecx, DWORD PTR _pad$33[ebp]
-  00300	0f b7 11	 movzx	 edx, WORD PTR [ecx]
-  00303	81 e2 00 20 00
-	00		 and	 edx, 8192		; 00002000H
-  00309	89 95 38 ff ff
-	ff		 mov	 DWORD PTR _buttonB$10[ebp], edx
+  003e3	8b 95 c4 fe ff
+	ff		 mov	 edx, DWORD PTR _pad$42[ebp]
+  003e9	0f b7 02	 movzx	 eax, WORD PTR [edx]
+  003ec	25 00 20 00 00	 and	 eax, 8192		; 00002000H
+  003f1	89 85 ec fd ff
+	ff		 mov	 DWORD PTR _buttonB$12[ebp], eax
 
-; 509  : 						bool32 buttonX = (pad->wButtons & XINPUT_GAMEPAD_X);
+; 518  : 						bool32 buttonX = (pad->wButtons & XINPUT_GAMEPAD_X);
 
-  0030f	8b 45 c4	 mov	 eax, DWORD PTR _pad$33[ebp]
-  00312	0f b7 08	 movzx	 ecx, WORD PTR [eax]
-  00315	81 e1 00 40 00
-	00		 and	 ecx, 16384		; 00004000H
-  0031b	89 8d 34 ff ff
-	ff		 mov	 DWORD PTR _buttonX$9[ebp], ecx
+  003f7	8b 8d c4 fe ff
+	ff		 mov	 ecx, DWORD PTR _pad$42[ebp]
+  003fd	0f b7 11	 movzx	 edx, WORD PTR [ecx]
+  00400	81 e2 00 40 00
+	00		 and	 edx, 16384		; 00004000H
+  00406	89 95 e8 fd ff
+	ff		 mov	 DWORD PTR _buttonX$11[ebp], edx
 
-; 510  : 						bool32 buttonY = (pad->wButtons & XINPUT_GAMEPAD_Y);
+; 519  : 						bool32 buttonY = (pad->wButtons & XINPUT_GAMEPAD_Y);
 
-  00321	8b 55 c4	 mov	 edx, DWORD PTR _pad$33[ebp]
-  00324	0f b7 02	 movzx	 eax, WORD PTR [edx]
-  00327	25 00 80 00 00	 and	 eax, 32768		; 00008000H
-  0032c	89 85 30 ff ff
-	ff		 mov	 DWORD PTR _buttonY$8[ebp], eax
-
-; 511  : 
-; 512  : 						int16 stickLX = pad->sThumbLX;
-
-  00332	8b 4d c4	 mov	 ecx, DWORD PTR _pad$33[ebp]
-  00335	66 8b 51 04	 mov	 dx, WORD PTR [ecx+4]
-  00339	66 89 55 ac	 mov	 WORD PTR _stickLX$27[ebp], dx
-
-; 513  : 						int16 stickLY = pad->sThumbLY;
-
-  0033d	8b 45 c4	 mov	 eax, DWORD PTR _pad$33[ebp]
-  00340	66 8b 48 06	 mov	 cx, WORD PTR [eax+6]
-  00344	66 89 4d a8	 mov	 WORD PTR _stickLY$26[ebp], cx
-
-; 514  : 						int16 stickRX = pad->sThumbRX;
-
-  00348	8b 55 c4	 mov	 edx, DWORD PTR _pad$33[ebp]
-  0034b	66 8b 42 08	 mov	 ax, WORD PTR [edx+8]
-  0034f	66 89 45 98	 mov	 WORD PTR _stickRX$22[ebp], ax
-
-; 515  : 						int16 stickRY = pad->sThumbRY;
-
-  00353	8b 4d c4	 mov	 ecx, DWORD PTR _pad$33[ebp]
-  00356	66 8b 51 0a	 mov	 dx, WORD PTR [ecx+10]
-  0035a	66 89 55 a4	 mov	 WORD PTR _stickRY$25[ebp], dx
-
-; 516  : 
-; 517  : 						// doesn't properly deal with deadzone
-; 518  : 						xOffset += stickLX / 4096;
-
-  0035e	0f bf 45 ac	 movsx	 eax, WORD PTR _stickLX$27[ebp]
-  00362	99		 cdq
-  00363	81 e2 ff 0f 00
-	00		 and	 edx, 4095		; 00000fffH
-  00369	03 c2		 add	 eax, edx
-  0036b	c1 f8 0c	 sar	 eax, 12			; 0000000cH
-  0036e	03 45 9c	 add	 eax, DWORD PTR _xOffset$23[ebp]
-  00371	89 45 9c	 mov	 DWORD PTR _xOffset$23[ebp], eax
-
-; 519  : 						yOffset += stickLY / 4096;
-
-  00374	0f bf 45 a8	 movsx	 eax, WORD PTR _stickLY$26[ebp]
-  00378	99		 cdq
-  00379	81 e2 ff 0f 00
-	00		 and	 edx, 4095		; 00000fffH
-  0037f	03 c2		 add	 eax, edx
-  00381	c1 f8 0c	 sar	 eax, 12			; 0000000cH
-  00384	03 45 a0	 add	 eax, DWORD PTR _yOffset$24[ebp]
-  00387	89 45 a0	 mov	 DWORD PTR _yOffset$24[ebp], eax
+  0040c	8b 85 c4 fe ff
+	ff		 mov	 eax, DWORD PTR _pad$42[ebp]
+  00412	0f b7 08	 movzx	 ecx, WORD PTR [eax]
+  00415	81 e1 00 80 00
+	00		 and	 ecx, 32768		; 00008000H
+  0041b	89 8d e4 fd ff
+	ff		 mov	 DWORD PTR _buttonY$10[ebp], ecx
 
 ; 520  : 
-; 521  : 						soundOutput.toneHz = 512 + (int)(256.0f * ((real32)stickRY / 30000.0f));
+; 521  : 						int16 stickLX = pad->sThumbLX;
 
-  0038a	0f bf 45 a4	 movsx	 eax, WORD PTR _stickRY$25[ebp]
-  0038e	f3 0f 2a c0	 cvtsi2ss xmm0, eax
-  00392	f3 0f 5e 05 00
-	00 00 00	 divss	 xmm0, DWORD PTR __real@46ea6000
-  0039a	f3 0f 59 05 00
-	00 00 00	 mulss	 xmm0, DWORD PTR __real@43800000
-  003a2	f3 0f 2c c8	 cvttss2si ecx, xmm0
-  003a6	81 c1 00 02 00
-	00		 add	 ecx, 512		; 00000200H
-  003ac	89 4d dc	 mov	 DWORD PTR _soundOutput$35[ebp+4], ecx
+  00421	8b 95 c4 fe ff
+	ff		 mov	 edx, DWORD PTR _pad$42[ebp]
+  00427	66 8b 42 04	 mov	 ax, WORD PTR [edx+4]
+  0042b	66 89 85 a4 fe
+	ff ff		 mov	 WORD PTR _stickLX$34[ebp], ax
 
-; 522  : 						soundOutput.wavePeriod = soundOutput.samplesPerSec / soundOutput.toneHz;
+; 522  : 						int16 stickLY = pad->sThumbLY;
 
-  003af	8b 45 d8	 mov	 eax, DWORD PTR _soundOutput$35[ebp]
-  003b2	99		 cdq
-  003b3	f7 7d dc	 idiv	 DWORD PTR _soundOutput$35[ebp+4]
-  003b6	89 45 e8	 mov	 DWORD PTR _soundOutput$35[ebp+16], eax
-$LN14@main:
+  00432	8b 8d c4 fe ff
+	ff		 mov	 ecx, DWORD PTR _pad$42[ebp]
+  00438	66 8b 51 06	 mov	 dx, WORD PTR [ecx+6]
+  0043c	66 89 95 ac fe
+	ff ff		 mov	 WORD PTR _stickLY$36[ebp], dx
 
-; 523  : 					}
-; 524  : 					else
-; 525  : 					{
-; 526  : 						// This controller is not available
-; 527  : 					}
-; 528  : 				}
+; 523  : 						int16 stickRX = pad->sThumbRX;
 
-  003b9	e9 5c fe ff ff	 jmp	 $LN6@main
-$LN7@main:
+  00443	8b 85 c4 fe ff
+	ff		 mov	 eax, DWORD PTR _pad$42[ebp]
+  00449	66 8b 48 08	 mov	 cx, WORD PTR [eax+8]
+  0044d	66 89 8d 68 fe
+	ff ff		 mov	 WORD PTR _stickRX$26[ebp], cx
+
+; 524  : 						int16 stickRY = pad->sThumbRY;
+
+  00454	8b 95 c4 fe ff
+	ff		 mov	 edx, DWORD PTR _pad$42[ebp]
+  0045a	66 8b 42 0a	 mov	 ax, WORD PTR [edx+10]
+  0045e	66 89 85 a8 fe
+	ff ff		 mov	 WORD PTR _stickRY$35[ebp], ax
+
+; 525  : 
+; 526  : 						// doesn't properly deal with deadzone
+; 527  : 						xOffset += stickLX / 4096;
+
+  00465	0f bf 85 a4 fe
+	ff ff		 movsx	 eax, WORD PTR _stickLX$34[ebp]
+  0046c	99		 cdq
+  0046d	81 e2 ff 0f 00
+	00		 and	 edx, 4095		; 00000fffH
+  00473	03 c2		 add	 eax, edx
+  00475	c1 f8 0c	 sar	 eax, 12			; 0000000cH
+  00478	03 85 9c fe ff
+	ff		 add	 eax, DWORD PTR _xOffset$32[ebp]
+  0047e	89 85 9c fe ff
+	ff		 mov	 DWORD PTR _xOffset$32[ebp], eax
+
+; 528  : 						yOffset += stickLY / 4096;
+
+  00484	0f bf 85 ac fe
+	ff ff		 movsx	 eax, WORD PTR _stickLY$36[ebp]
+  0048b	99		 cdq
+  0048c	81 e2 ff 0f 00
+	00		 and	 edx, 4095		; 00000fffH
+  00492	03 c2		 add	 eax, edx
+  00494	c1 f8 0c	 sar	 eax, 12			; 0000000cH
+  00497	03 85 a0 fe ff
+	ff		 add	 eax, DWORD PTR _yOffset$33[ebp]
+  0049d	89 85 a0 fe ff
+	ff		 mov	 DWORD PTR _yOffset$33[ebp], eax
 
 ; 529  : 
-; 530  : 				Win32RenderColor(&g_back_buffer, xOffset, yOffset, 0);
+; 530  : 						soundOutput.toneHz = 512 + (int)(256.0f * ((real32)stickRY / 30000.0f));
 
-  003be	6a 00		 push	 0
-  003c0	8b 55 a0	 mov	 edx, DWORD PTR _yOffset$24[ebp]
-  003c3	52		 push	 edx
-  003c4	8b 45 9c	 mov	 eax, DWORD PTR _xOffset$23[ebp]
-  003c7	50		 push	 eax
-  003c8	68 00 00 00 00	 push	 OFFSET ?g_back_buffer@@3Uoffscreen_buffer@@A
-  003cd	e8 00 00 00 00	 call	 ?Win32RenderColor@@YAXPAUoffscreen_buffer@@HHH@Z ; Win32RenderColor
-  003d2	83 c4 10	 add	 esp, 16			; 00000010H
+  004a3	0f bf 8d a8 fe
+	ff ff		 movsx	 ecx, WORD PTR _stickRY$35[ebp]
+  004aa	f3 0f 2a c1	 cvtsi2ss xmm0, ecx
+  004ae	f3 0f 5e 05 00
+	00 00 00	 divss	 xmm0, DWORD PTR __real@46ea6000
+  004b6	f3 0f 59 05 00
+	00 00 00	 mulss	 xmm0, DWORD PTR __real@43800000
+  004be	f3 0f 2c d0	 cvttss2si edx, xmm0
+  004c2	81 c2 00 02 00
+	00		 add	 edx, 512		; 00000200H
+  004c8	89 95 dc fe ff
+	ff		 mov	 DWORD PTR _soundOutput$44[ebp+4], edx
 
-; 531  : 
-; 532  : #pragma region DirectSoundTest
-; 533  : 				DWORD playCursor;
-; 534  : 				DWORD writeCursor;
-; 535  : 				if (SUCCEEDED(g_secondary_buffer->GetCurrentPosition(&playCursor, &writeCursor)))
+; 531  : 						soundOutput.wavePeriod = soundOutput.samplesPerSec / soundOutput.toneHz;
 
-  003d5	8d 8d 2c ff ff
-	ff		 lea	 ecx, DWORD PTR _writeCursor$7[ebp]
-  003db	51		 push	 ecx
-  003dc	8d 55 b4	 lea	 edx, DWORD PTR _playCursor$29[ebp]
-  003df	52		 push	 edx
-  003e0	a1 00 00 00 00	 mov	 eax, DWORD PTR ?g_secondary_buffer@@3PAUIDirectSoundBuffer@@A
-  003e5	8b 08		 mov	 ecx, DWORD PTR [eax]
-  003e7	8b 15 00 00 00
-	00		 mov	 edx, DWORD PTR ?g_secondary_buffer@@3PAUIDirectSoundBuffer@@A
-  003ed	52		 push	 edx
-  003ee	8b 41 10	 mov	 eax, DWORD PTR [ecx+16]
-  003f1	ff d0		 call	 eax
-  003f3	85 c0		 test	 eax, eax
-  003f5	7c 6a		 jl	 SHORT $LN16@main
+  004ce	8b 85 d8 fe ff
+	ff		 mov	 eax, DWORD PTR _soundOutput$44[ebp]
+  004d4	99		 cdq
+  004d5	f7 bd dc fe ff
+	ff		 idiv	 DWORD PTR _soundOutput$44[ebp+4]
+  004db	89 85 e8 fe ff
+	ff		 mov	 DWORD PTR _soundOutput$44[ebp+16], eax
+$LN14@main:
 
-; 536  : 				{
-; 537  : 					DWORD byteToLock = ((soundOutput.runningSampleIndex * soundOutput.bytesPerSample) %
+; 532  : 					}
+; 533  : 					else
+; 534  : 					{
+; 535  : 						// This controller is not available
+; 536  : 					}
+; 537  : 				}
 
-  003f7	8b 45 e4	 mov	 eax, DWORD PTR _soundOutput$35[ebp+12]
-  003fa	0f af 45 ec	 imul	 eax, DWORD PTR _soundOutput$35[ebp+20]
-  003fe	33 d2		 xor	 edx, edx
-  00400	f7 75 f0	 div	 DWORD PTR _soundOutput$35[ebp+24]
-  00403	89 55 bc	 mov	 DWORD PTR _byteToLock$31[ebp], edx
+  004e1	e9 dd fd ff ff	 jmp	 $LN6@main
+$LN7@main:
 
-; 538  : 						soundOutput.bufferSize);
-; 539  : 					DWORD targetCursor = playCursor +
+; 538  : 
+; 539  : 				Win32RenderColor(&g_back_buffer, xOffset, yOffset, 0);
 
-  00406	8b 45 f8	 mov	 eax, DWORD PTR _soundOutput$35[ebp+32]
-  00409	0f af 45 ec	 imul	 eax, DWORD PTR _soundOutput$35[ebp+20]
-  0040d	99		 cdq
-  0040e	f7 7d f0	 idiv	 DWORD PTR _soundOutput$35[ebp+24]
-  00411	03 55 b4	 add	 edx, DWORD PTR _playCursor$29[ebp]
-  00414	89 55 90	 mov	 DWORD PTR _targetCursor$20[ebp], edx
+  004e6	6a 00		 push	 0
+  004e8	8b 85 a0 fe ff
+	ff		 mov	 eax, DWORD PTR _yOffset$33[ebp]
+  004ee	50		 push	 eax
+  004ef	8b 8d 9c fe ff
+	ff		 mov	 ecx, DWORD PTR _xOffset$32[ebp]
+  004f5	51		 push	 ecx
+  004f6	68 00 00 00 00	 push	 OFFSET ?g_back_buffer@@3Uoffscreen_buffer@@A
+  004fb	e8 00 00 00 00	 call	 ?Win32RenderColor@@YAXPAUoffscreen_buffer@@HHH@Z ; Win32RenderColor
+  00500	83 c4 10	 add	 esp, 16			; 00000010H
 
-; 540  : 						(soundOutput.latencySample * soundOutput.bytesPerSample) %
-; 541  : 						soundOutput.bufferSize;
-; 542  : 					DWORD bytesToWrite;
-; 543  : 
-; 544  : 					if (byteToLock == playCursor)
+; 540  : 
+; 541  : #pragma region DirectSoundTest
+; 542  : 				DWORD playCursor;
+; 543  : 				DWORD writeCursor;
+; 544  : 				if (SUCCEEDED(g_secondary_buffer->GetCurrentPosition(&playCursor, &writeCursor)))
 
-  00417	8b 4d bc	 mov	 ecx, DWORD PTR _byteToLock$31[ebp]
-  0041a	3b 4d b4	 cmp	 ecx, DWORD PTR _playCursor$29[ebp]
-  0041d	75 09		 jne	 SHORT $LN17@main
+  00503	8d 95 e0 fd ff
+	ff		 lea	 edx, DWORD PTR _writeCursor$9[ebp]
+  00509	52		 push	 edx
+  0050a	8d 85 b4 fe ff
+	ff		 lea	 eax, DWORD PTR _playCursor$38[ebp]
+  00510	50		 push	 eax
+  00511	8b 0d 00 00 00
+	00		 mov	 ecx, DWORD PTR ?g_secondary_buffer@@3PAUIDirectSoundBuffer@@A
+  00517	8b 11		 mov	 edx, DWORD PTR [ecx]
+  00519	a1 00 00 00 00	 mov	 eax, DWORD PTR ?g_secondary_buffer@@3PAUIDirectSoundBuffer@@A
+  0051e	50		 push	 eax
+  0051f	8b 4a 10	 mov	 ecx, DWORD PTR [edx+16]
+  00522	ff d1		 call	 ecx
+  00524	85 c0		 test	 eax, eax
+  00526	0f 8c b8 00 00
+	00		 jl	 $LN16@main
 
-; 545  : 					{
-; 546  : 						bytesToWrite = 0;
+; 545  : 				{
+; 546  : 					DWORD byteToLock = ((soundOutput.runningSampleIndex * soundOutput.bytesPerSample) %
 
-  0041f	c7 45 c0 00 00
-	00 00		 mov	 DWORD PTR _bytesToWrite$32[ebp], 0
+  0052c	8b 85 e4 fe ff
+	ff		 mov	 eax, DWORD PTR _soundOutput$44[ebp+12]
+  00532	0f af 85 ec fe
+	ff ff		 imul	 eax, DWORD PTR _soundOutput$44[ebp+20]
+  00539	33 d2		 xor	 edx, edx
+  0053b	f7 b5 f0 fe ff
+	ff		 div	 DWORD PTR _soundOutput$44[ebp+24]
+  00541	89 95 c0 fe ff
+	ff		 mov	 DWORD PTR _byteToLock$41[ebp], edx
 
-; 547  : 					}
+; 547  : 						soundOutput.bufferSize);
+; 548  : 					DWORD targetCursor = playCursor +
 
-  00426	eb 25		 jmp	 SHORT $LN20@main
-$LN17@main:
+  00547	8b 85 f8 fe ff
+	ff		 mov	 eax, DWORD PTR _soundOutput$44[ebp+32]
+  0054d	0f af 85 ec fe
+	ff ff		 imul	 eax, DWORD PTR _soundOutput$44[ebp+20]
+  00554	99		 cdq
+  00555	f7 bd f0 fe ff
+	ff		 idiv	 DWORD PTR _soundOutput$44[ebp+24]
+  0055b	03 95 b4 fe ff
+	ff		 add	 edx, DWORD PTR _playCursor$38[ebp]
+  00561	89 95 60 fe ff
+	ff		 mov	 DWORD PTR _targetCursor$24[ebp], edx
 
-; 548  : 					else if (byteToLock > playCursor)
+; 549  : 						(soundOutput.latencySample * soundOutput.bytesPerSample) %
+; 550  : 						soundOutput.bufferSize;
+; 551  : 					DWORD bytesToWrite;
+; 552  : 
+; 553  : 					if (byteToLock == playCursor)
 
-  00428	8b 55 bc	 mov	 edx, DWORD PTR _byteToLock$31[ebp]
-  0042b	3b 55 b4	 cmp	 edx, DWORD PTR _playCursor$29[ebp]
-  0042e	76 14		 jbe	 SHORT $LN19@main
+  00567	8b 95 c0 fe ff
+	ff		 mov	 edx, DWORD PTR _byteToLock$41[ebp]
+  0056d	3b 95 b4 fe ff
+	ff		 cmp	 edx, DWORD PTR _playCursor$38[ebp]
+  00573	75 0c		 jne	 SHORT $LN17@main
 
-; 549  : 					{
-; 550  : 						bytesToWrite = (soundOutput.bufferSize - byteToLock);
-
-  00430	8b 45 f0	 mov	 eax, DWORD PTR _soundOutput$35[ebp+24]
-  00433	2b 45 bc	 sub	 eax, DWORD PTR _byteToLock$31[ebp]
-  00436	89 45 c0	 mov	 DWORD PTR _bytesToWrite$32[ebp], eax
-
-; 551  : 						bytesToWrite += playCursor;
-
-  00439	8b 4d c0	 mov	 ecx, DWORD PTR _bytesToWrite$32[ebp]
-  0043c	03 4d b4	 add	 ecx, DWORD PTR _playCursor$29[ebp]
-  0043f	89 4d c0	 mov	 DWORD PTR _bytesToWrite$32[ebp], ecx
-
-; 552  : 					}
-
-  00442	eb 09		 jmp	 SHORT $LN20@main
-$LN19@main:
-
-; 553  : 					else
 ; 554  : 					{
-; 555  : 						bytesToWrite = targetCursor - byteToLock;
+; 555  : 						bytesToWrite = 0;
 
-  00444	8b 55 90	 mov	 edx, DWORD PTR _targetCursor$20[ebp]
-  00447	2b 55 bc	 sub	 edx, DWORD PTR _byteToLock$31[ebp]
-  0044a	89 55 c0	 mov	 DWORD PTR _bytesToWrite$32[ebp], edx
-$LN20@main:
+  00575	c7 85 bc fe ff
+	ff 00 00 00 00	 mov	 DWORD PTR _bytesToWrite$40[ebp], 0
 
 ; 556  : 					}
-; 557  : 
-; 558  : 					Win32FillSoundBuffer(&soundOutput, byteToLock, bytesToWrite);
 
-  0044d	8b 45 c0	 mov	 eax, DWORD PTR _bytesToWrite$32[ebp]
-  00450	50		 push	 eax
-  00451	8b 4d bc	 mov	 ecx, DWORD PTR _byteToLock$31[ebp]
-  00454	51		 push	 ecx
-  00455	8d 55 d8	 lea	 edx, DWORD PTR _soundOutput$35[ebp]
-  00458	52		 push	 edx
-  00459	e8 00 00 00 00	 call	 ?Win32FillSoundBuffer@@YAXPAUsound_output@@KK@Z ; Win32FillSoundBuffer
-  0045e	83 c4 0c	 add	 esp, 12			; 0000000cH
+  0057f	eb 46		 jmp	 SHORT $LN20@main
+$LN17@main:
+
+; 557  : 					else if (byteToLock > playCursor)
+
+  00581	8b 85 c0 fe ff
+	ff		 mov	 eax, DWORD PTR _byteToLock$41[ebp]
+  00587	3b 85 b4 fe ff
+	ff		 cmp	 eax, DWORD PTR _playCursor$38[ebp]
+  0058d	76 26		 jbe	 SHORT $LN19@main
+
+; 558  : 					{
+; 559  : 						bytesToWrite = (soundOutput.bufferSize - byteToLock);
+
+  0058f	8b 8d f0 fe ff
+	ff		 mov	 ecx, DWORD PTR _soundOutput$44[ebp+24]
+  00595	2b 8d c0 fe ff
+	ff		 sub	 ecx, DWORD PTR _byteToLock$41[ebp]
+  0059b	89 8d bc fe ff
+	ff		 mov	 DWORD PTR _bytesToWrite$40[ebp], ecx
+
+; 560  : 						bytesToWrite += playCursor;
+
+  005a1	8b 95 bc fe ff
+	ff		 mov	 edx, DWORD PTR _bytesToWrite$40[ebp]
+  005a7	03 95 b4 fe ff
+	ff		 add	 edx, DWORD PTR _playCursor$38[ebp]
+  005ad	89 95 bc fe ff
+	ff		 mov	 DWORD PTR _bytesToWrite$40[ebp], edx
+
+; 561  : 					}
+
+  005b3	eb 12		 jmp	 SHORT $LN20@main
+$LN19@main:
+
+; 562  : 					else
+; 563  : 					{
+; 564  : 						bytesToWrite = targetCursor - byteToLock;
+
+  005b5	8b 85 60 fe ff
+	ff		 mov	 eax, DWORD PTR _targetCursor$24[ebp]
+  005bb	2b 85 c0 fe ff
+	ff		 sub	 eax, DWORD PTR _byteToLock$41[ebp]
+  005c1	89 85 bc fe ff
+	ff		 mov	 DWORD PTR _bytesToWrite$40[ebp], eax
+$LN20@main:
+
+; 565  : 					}
+; 566  : 
+; 567  : 					Win32FillSoundBuffer(&soundOutput, byteToLock, bytesToWrite);
+
+  005c7	8b 8d bc fe ff
+	ff		 mov	 ecx, DWORD PTR _bytesToWrite$40[ebp]
+  005cd	51		 push	 ecx
+  005ce	8b 95 c0 fe ff
+	ff		 mov	 edx, DWORD PTR _byteToLock$41[ebp]
+  005d4	52		 push	 edx
+  005d5	8d 85 d8 fe ff
+	ff		 lea	 eax, DWORD PTR _soundOutput$44[ebp]
+  005db	50		 push	 eax
+  005dc	e8 00 00 00 00	 call	 ?Win32FillSoundBuffer@@YAXPAUsound_output@@KK@Z ; Win32FillSoundBuffer
+  005e1	83 c4 0c	 add	 esp, 12			; 0000000cH
 $LN16@main:
 
-; 559  : 				}
-; 560  : #pragma endregion
-; 561  : 
-; 562  : 				window_dimensions dimensions = Win32GetWindowDimensions(Window);
+; 568  : 				}
+; 569  : #pragma endregion
+; 570  : 
+; 571  : 				window_dimensions dimensions = Win32GetWindowDimensions(Window);
 
-  00461	8b 45 b0	 mov	 eax, DWORD PTR _Window$28[ebp]
-  00464	50		 push	 eax
-  00465	e8 00 00 00 00	 call	 ?Win32GetWindowDimensions@@YA?AUwindow_dimensions@@PAUHWND__@@@Z ; Win32GetWindowDimensions
-  0046a	83 c4 04	 add	 esp, 4
-  0046d	89 85 7c ff ff
-	ff		 mov	 DWORD PTR $T17[ebp], eax
-  00473	89 55 80	 mov	 DWORD PTR $T17[ebp+4], edx
-  00476	8b 8d 7c ff ff
-	ff		 mov	 ecx, DWORD PTR $T17[ebp]
-  0047c	8b 55 80	 mov	 edx, DWORD PTR $T17[ebp+4]
-  0047f	89 4d 84	 mov	 DWORD PTR _dimensions$18[ebp], ecx
-  00482	89 55 88	 mov	 DWORD PTR _dimensions$18[ebp+4], edx
+  005e4	8b 8d b0 fe ff
+	ff		 mov	 ecx, DWORD PTR _Window$37[ebp]
+  005ea	51		 push	 ecx
+  005eb	e8 00 00 00 00	 call	 ?Win32GetWindowDimensions@@YA?AUwindow_dimensions@@PAUHWND__@@@Z ; Win32GetWindowDimensions
+  005f0	83 c4 04	 add	 esp, 4
+  005f3	89 85 40 fe ff
+	ff		 mov	 DWORD PTR $T19[ebp], eax
+  005f9	89 95 44 fe ff
+	ff		 mov	 DWORD PTR $T19[ebp+4], edx
+  005ff	8b 95 40 fe ff
+	ff		 mov	 edx, DWORD PTR $T19[ebp]
+  00605	8b 85 44 fe ff
+	ff		 mov	 eax, DWORD PTR $T19[ebp+4]
+  0060b	89 95 38 fe ff
+	ff		 mov	 DWORD PTR _dimensions$18[ebp], edx
+  00611	89 85 3c fe ff
+	ff		 mov	 DWORD PTR _dimensions$18[ebp+4], eax
 
-; 563  : 				Win32DisplayBufferToWindow(
+; 572  : 				Win32DisplayBufferToWindow(
 
-  00485	8b 45 88	 mov	 eax, DWORD PTR _dimensions$18[ebp+4]
-  00488	50		 push	 eax
-  00489	8b 4d 84	 mov	 ecx, DWORD PTR _dimensions$18[ebp]
-  0048c	51		 push	 ecx
-  0048d	8b 55 8c	 mov	 edx, DWORD PTR _DeviceContext$19[ebp]
-  00490	52		 push	 edx
-  00491	68 00 00 00 00	 push	 OFFSET ?g_back_buffer@@3Uoffscreen_buffer@@A
-  00496	e8 00 00 00 00	 call	 ?Win32DisplayBufferToWindow@@YAXPAUoffscreen_buffer@@PAUHDC__@@HH@Z ; Win32DisplayBufferToWindow
-  0049b	83 c4 10	 add	 esp, 16			; 00000010H
+  00617	8b 8d 3c fe ff
+	ff		 mov	 ecx, DWORD PTR _dimensions$18[ebp+4]
+  0061d	51		 push	 ecx
+  0061e	8b 95 38 fe ff
+	ff		 mov	 edx, DWORD PTR _dimensions$18[ebp]
+  00624	52		 push	 edx
+  00625	8b 85 5c fe ff
+	ff		 mov	 eax, DWORD PTR _DeviceContext$23[ebp]
+  0062b	50		 push	 eax
+  0062c	68 00 00 00 00	 push	 OFFSET ?g_back_buffer@@3Uoffscreen_buffer@@A
+  00631	e8 00 00 00 00	 call	 ?Win32DisplayBufferToWindow@@YAXPAUoffscreen_buffer@@PAUHDC__@@HH@Z ; Win32DisplayBufferToWindow
+  00636	83 c4 10	 add	 esp, 16			; 00000010H
 
-; 564  : 					&g_back_buffer,
-; 565  : 					DeviceContext,
-; 566  : 					dimensions.width, dimensions.height);
-; 567  : 
-; 568  : 			}
+; 573  : 					&g_back_buffer,
+; 574  : 					DeviceContext,
+; 575  : 					dimensions.width, dimensions.height);
+; 576  : 
+; 577  : 				int64 endCycleCount = __rdtsc();
 
-  0049e	e9 19 fd ff ff	 jmp	 $LN2@main
+  00639	0f 31		 rdtsc
+  0063b	89 85 7c fe ff
+	ff		 mov	 DWORD PTR _endCycleCount$29[ebp], eax
+  00641	89 95 80 fe ff
+	ff		 mov	 DWORD PTR _endCycleCount$29[ebp+4], edx
+
+; 578  : 				LARGE_INTEGER endCounter;
+; 579  : 				QueryPerformanceCounter(&endCounter);
+
+  00647	8d 8d 74 fe ff
+	ff		 lea	 ecx, DWORD PTR _endCounter$28[ebp]
+  0064d	51		 push	 ecx
+  0064e	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__QueryPerformanceCounter@4
+
+; 580  : 
+; 581  : 				// for debugging purposes
+; 582  : 				int64 cyclesElapsed = endCycleCount - lastCycleCount;
+
+  00654	8b 95 7c fe ff
+	ff		 mov	 edx, DWORD PTR _endCycleCount$29[ebp]
+  0065a	2b 95 84 fe ff
+	ff		 sub	 edx, DWORD PTR _lastCycleCount$30[ebp]
+  00660	8b 85 80 fe ff
+	ff		 mov	 eax, DWORD PTR _endCycleCount$29[ebp+4]
+  00666	1b 85 88 fe ff
+	ff		 sbb	 eax, DWORD PTR _lastCycleCount$30[ebp+4]
+  0066c	89 95 30 fe ff
+	ff		 mov	 DWORD PTR _cyclesElapsed$17[ebp], edx
+  00672	89 85 34 fe ff
+	ff		 mov	 DWORD PTR _cyclesElapsed$17[ebp+4], eax
+
+; 583  : 				int64 counterElapsed = endCounter.QuadPart - lastCounter.QuadPart;
+
+  00678	8b 8d 74 fe ff
+	ff		 mov	 ecx, DWORD PTR _endCounter$28[ebp]
+  0067e	2b 8d 6c fe ff
+	ff		 sub	 ecx, DWORD PTR _lastCounter$27[ebp]
+  00684	8b 95 78 fe ff
+	ff		 mov	 edx, DWORD PTR _endCounter$28[ebp+4]
+  0068a	1b 95 70 fe ff
+	ff		 sbb	 edx, DWORD PTR _lastCounter$27[ebp+4]
+  00690	89 8d 8c fe ff
+	ff		 mov	 DWORD PTR _counterElapsed$31[ebp], ecx
+  00696	89 95 90 fe ff
+	ff		 mov	 DWORD PTR _counterElapsed$31[ebp+4], edx
+
+; 584  : 				real32 mSPerFrame = (((1000.0f*(real32)counterElapsed) / (real32)perfCountFrequency));
+
+  0069c	8b 95 90 fe ff
+	ff		 mov	 edx, DWORD PTR _counterElapsed$31[ebp+4]
+  006a2	8b 8d 8c fe ff
+	ff		 mov	 ecx, DWORD PTR _counterElapsed$31[ebp]
+  006a8	e8 00 00 00 00	 call	 __ltod3
+  006ad	f2 0f 5a c0	 cvtsd2ss xmm0, xmm0
+  006b1	f3 0f 59 05 00
+	00 00 00	 mulss	 xmm0, DWORD PTR __real@447a0000
+  006b9	8b 95 98 fe ff
+	ff		 mov	 edx, DWORD PTR _perfCountFrequency$[ebp+4]
+  006bf	8b 8d 94 fe ff
+	ff		 mov	 ecx, DWORD PTR _perfCountFrequency$[ebp]
+  006c5	f3 0f 11 85 58
+	fe ff ff	 movss	 DWORD PTR tv561[ebp], xmm0
+  006cd	e8 00 00 00 00	 call	 __ltod3
+  006d2	f2 0f 5a c0	 cvtsd2ss xmm0, xmm0
+  006d6	f3 0f 10 8d 58
+	fe ff ff	 movss	 xmm1, DWORD PTR tv561[ebp]
+  006de	f3 0f 5e c8	 divss	 xmm1, xmm0
+  006e2	f3 0f 11 8d 48
+	fe ff ff	 movss	 DWORD PTR _mSPerFrame$20[ebp], xmm1
+
+; 585  : 				real32 fps = (real32)perfCountFrequency / (real32)counterElapsed;
+
+  006ea	8b 95 98 fe ff
+	ff		 mov	 edx, DWORD PTR _perfCountFrequency$[ebp+4]
+  006f0	8b 8d 94 fe ff
+	ff		 mov	 ecx, DWORD PTR _perfCountFrequency$[ebp]
+  006f6	e8 00 00 00 00	 call	 __ltod3
+  006fb	f2 0f 5a c0	 cvtsd2ss xmm0, xmm0
+  006ff	8b 95 90 fe ff
+	ff		 mov	 edx, DWORD PTR _counterElapsed$31[ebp+4]
+  00705	8b 8d 8c fe ff
+	ff		 mov	 ecx, DWORD PTR _counterElapsed$31[ebp]
+  0070b	f3 0f 11 85 54
+	fe ff ff	 movss	 DWORD PTR tv563[ebp], xmm0
+  00713	e8 00 00 00 00	 call	 __ltod3
+  00718	f2 0f 5a c0	 cvtsd2ss xmm0, xmm0
+  0071c	f3 0f 10 8d 54
+	fe ff ff	 movss	 xmm1, DWORD PTR tv563[ebp]
+  00724	f3 0f 5e c8	 divss	 xmm1, xmm0
+  00728	f3 0f 11 8d 4c
+	fe ff ff	 movss	 DWORD PTR _fps$21[ebp], xmm1
+
+; 586  : 				real32 MegaCyclePerFrame = ((real32)cyclesElapsed / 1000000.0f);		
+
+  00730	8b 95 34 fe ff
+	ff		 mov	 edx, DWORD PTR _cyclesElapsed$17[ebp+4]
+  00736	8b 8d 30 fe ff
+	ff		 mov	 ecx, DWORD PTR _cyclesElapsed$17[ebp]
+  0073c	e8 00 00 00 00	 call	 __ltod3
+  00741	f2 0f 5a c0	 cvtsd2ss xmm0, xmm0
+  00745	f3 0f 5e 05 00
+	00 00 00	 divss	 xmm0, DWORD PTR __real@49742400
+  0074d	f3 0f 11 85 50
+	fe ff ff	 movss	 DWORD PTR _MegaCyclePerFrame$22[ebp], xmm0
+
+; 587  : 				char buffer[256];
+; 588  : 				sprintf_s(buffer, "%fmspf | %ffps | %fMcpf\n", mSPerFrame, fps, MegaCyclePerFrame);
+
+  00755	f3 0f 5a 85 50
+	fe ff ff	 cvtss2sd xmm0, DWORD PTR _MegaCyclePerFrame$22[ebp]
+  0075d	83 ec 08	 sub	 esp, 8
+  00760	f2 0f 11 04 24	 movsd	 QWORD PTR [esp], xmm0
+  00765	f3 0f 5a 85 4c
+	fe ff ff	 cvtss2sd xmm0, DWORD PTR _fps$21[ebp]
+  0076d	83 ec 08	 sub	 esp, 8
+  00770	f2 0f 11 04 24	 movsd	 QWORD PTR [esp], xmm0
+  00775	f3 0f 5a 85 48
+	fe ff ff	 cvtss2sd xmm0, DWORD PTR _mSPerFrame$20[ebp]
+  0077d	83 ec 08	 sub	 esp, 8
+  00780	f2 0f 11 04 24	 movsd	 QWORD PTR [esp], xmm0
+  00785	68 00 00 00 00	 push	 OFFSET $SG98399
+  0078a	8d 85 fc fe ff
+	ff		 lea	 eax, DWORD PTR _buffer$45[ebp]
+  00790	50		 push	 eax
+  00791	e8 00 00 00 00	 call	 ??$sprintf_s@$0BAA@@@YAHAAY0BAA@DPBDZZ ; sprintf_s<256>
+  00796	83 c4 20	 add	 esp, 32			; 00000020H
+
+; 589  : 				OutputDebugStringA(buffer);
+
+  00799	8d 8d fc fe ff
+	ff		 lea	 ecx, DWORD PTR _buffer$45[ebp]
+  0079f	51		 push	 ecx
+  007a0	ff 15 00 00 00
+	00		 call	 DWORD PTR __imp__OutputDebugStringA@4
+
+; 590  : 				//end
+; 591  : 
+; 592  : 				lastCounter = endCounter;
+
+  007a6	8b 95 74 fe ff
+	ff		 mov	 edx, DWORD PTR _endCounter$28[ebp]
+  007ac	8b 85 78 fe ff
+	ff		 mov	 eax, DWORD PTR _endCounter$28[ebp+4]
+  007b2	89 95 6c fe ff
+	ff		 mov	 DWORD PTR _lastCounter$27[ebp], edx
+  007b8	89 85 70 fe ff
+	ff		 mov	 DWORD PTR _lastCounter$27[ebp+4], eax
+
+; 593  : 				lastCycleCount = endCycleCount;
+
+  007be	8b 8d 7c fe ff
+	ff		 mov	 ecx, DWORD PTR _endCycleCount$29[ebp]
+  007c4	8b 95 80 fe ff
+	ff		 mov	 edx, DWORD PTR _endCycleCount$29[ebp+4]
+  007ca	89 8d 84 fe ff
+	ff		 mov	 DWORD PTR _lastCycleCount$30[ebp], ecx
+  007d0	89 95 88 fe ff
+	ff		 mov	 DWORD PTR _lastCycleCount$30[ebp+4], edx
+
+; 594  : 			}
+
+  007d6	e9 87 fa ff ff	 jmp	 $LN2@main
 $LN3@main:
 $LN11@main:
 $LN9@main:
 
-; 569  : 		}
-; 570  : 		else
-; 571  : 		{
-; 572  : 			//log
-; 573  : 		}
-; 574  : 	}
-; 575  : 	else
-; 576  : 	{
-; 577  : 		//log
-; 578  : 	}
-; 579  : 
-; 580  : }
+; 595  : 		}
+; 596  : 		else
+; 597  : 		{
+; 598  : 			//log
+; 599  : 		}
+; 600  : 	}
+; 601  : 	else
+; 602  : 	{
+; 603  : 		//log
+; 604  : 	}
+; 605  : 
+; 606  : }
 
-  004a3	33 c0		 xor	 eax, eax
-  004a5	8b 4d fc	 mov	 ecx, DWORD PTR __$ArrayPad$[ebp]
-  004a8	33 cd		 xor	 ecx, ebp
-  004aa	e8 00 00 00 00	 call	 @__security_check_cookie@4
-  004af	8b e5		 mov	 esp, ebp
-  004b1	5d		 pop	 ebp
-  004b2	c3		 ret	 0
+  007db	33 c0		 xor	 eax, eax
+  007dd	8b 4d fc	 mov	 ecx, DWORD PTR __$ArrayPad$[ebp]
+  007e0	33 cd		 xor	 ecx, ebp
+  007e2	e8 00 00 00 00	 call	 @__security_check_cookie@4
+  007e7	8b e5		 mov	 esp, ebp
+  007e9	5d		 pop	 ebp
+  007ea	c3		 ret	 0
 _main	ENDP
 _TEXT	ENDS
 ; Function compile flags: /Odtp
@@ -902,7 +1283,7 @@ _WParam$ = 16						; size = 4
 _LParam$ = 20						; size = 4
 ?Win32MainWindowCallback@@YGJPAUHWND__@@IIJ@Z PROC	; Win32MainWindowCallback
 
-; 311  : {
+; 312  : {
 
   00000	55		 push	 ebp
   00001	8b ec		 mov	 ebp, esp
@@ -911,13 +1292,13 @@ _LParam$ = 20						; size = 4
   0000b	33 c5		 xor	 eax, ebp
   0000d	89 45 fc	 mov	 DWORD PTR __$ArrayPad$[ebp], eax
 
-; 312  : 	LRESULT result = 0;
+; 313  : 	LRESULT result = 0;
 
   00010	c7 45 a0 00 00
 	00 00		 mov	 DWORD PTR _result$[ebp], 0
 
-; 313  : 
-; 314  : 	switch (Message)
+; 314  : 
+; 315  : 	switch (Message)
 
   00017	8b 45 0c	 mov	 eax, DWORD PTR _Message$[ebp]
   0001a	89 45 b4	 mov	 DWORD PTR tv64[ebp], eax
@@ -952,68 +1333,68 @@ $LN46@Win32MainW:
   00072	e9 50 01 00 00	 jmp	 $LN40@Win32MainW
 $LN4@Win32MainW:
 
-; 315  : 	{
-; 316  : 	case WM_CLOSE:
-; 317  : 	{
-; 318  : 		g_running = false;
+; 316  : 	{
+; 317  : 	case WM_CLOSE:
+; 318  : 	{
+; 319  : 		g_running = false;
 
   00077	c7 05 00 00 00
 	00 00 00 00 00	 mov	 DWORD PTR ?g_running@@3HA, 0
 
-; 319  : 		OutputDebugStringA("WM_CLOSE\n");
+; 320  : 		OutputDebugStringA("WM_CLOSE\n");
 
-  00081	68 00 00 00 00	 push	 OFFSET $SG95482
+  00081	68 00 00 00 00	 push	 OFFSET $SG98266
   00086	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__OutputDebugStringA@4
 
-; 320  : 	} break;
+; 321  : 	} break;
 
   0008c	e9 4f 01 00 00	 jmp	 $LN2@Win32MainW
 $LN5@Win32MainW:
 
-; 321  : 	case WM_ACTIVATEAPP:
-; 322  : 	{
-; 323  : 		OutputDebugStringA("WM_ACTIVATEAPP\n");
+; 322  : 	case WM_ACTIVATEAPP:
+; 323  : 	{
+; 324  : 		OutputDebugStringA("WM_ACTIVATEAPP\n");
 
-  00091	68 00 00 00 00	 push	 OFFSET $SG95484
+  00091	68 00 00 00 00	 push	 OFFSET $SG98268
   00096	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__OutputDebugStringA@4
 
-; 324  : 	} break;
+; 325  : 	} break;
 
   0009c	e9 3f 01 00 00	 jmp	 $LN2@Win32MainW
 $LN6@Win32MainW:
 
-; 325  : 	case WM_DESTROY:
-; 326  : 	{
-; 327  : 		g_running = false;
+; 326  : 	case WM_DESTROY:
+; 327  : 	{
+; 328  : 		g_running = false;
 
   000a1	c7 05 00 00 00
 	00 00 00 00 00	 mov	 DWORD PTR ?g_running@@3HA, 0
 
-; 328  : 		OutputDebugStringA("WM_DESTROY\n");
+; 329  : 		OutputDebugStringA("WM_DESTROY\n");
 
-  000ab	68 00 00 00 00	 push	 OFFSET $SG95486
+  000ab	68 00 00 00 00	 push	 OFFSET $SG98270
   000b0	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__OutputDebugStringA@4
 
-; 329  : 	} break;
+; 330  : 	} break;
 
   000b6	e9 25 01 00 00	 jmp	 $LN2@Win32MainW
 $LN10@Win32MainW:
 
-; 330  : 
-; 331  : 	case WM_SYSKEYDOWN:
-; 332  : 	case WM_SYSKEYUP:
-; 333  : 	case WM_KEYDOWN:
-; 334  : 	case WM_KEYUP:
-; 335  : 	{
-; 336  : 		uint32 VKCode = WParam;
+; 331  : 
+; 332  : 	case WM_SYSKEYDOWN:
+; 333  : 	case WM_SYSKEYUP:
+; 334  : 	case WM_KEYDOWN:
+; 335  : 	case WM_KEYUP:
+; 336  : 	{
+; 337  : 		uint32 VKCode = WParam;
 
   000bb	8b 4d 10	 mov	 ecx, DWORD PTR _WParam$[ebp]
   000be	89 4d b8	 mov	 DWORD PTR _VKCode$7[ebp], ecx
 
-; 337  : 		bool32 wasDown = ((LParam & (1 << 30)) != 0);
+; 338  : 		bool32 wasDown = ((LParam & (1 << 30)) != 0);
 
   000c1	8b 55 14	 mov	 edx, DWORD PTR _LParam$[ebp]
   000c4	81 e2 00 00 00
@@ -1029,7 +1410,7 @@ $LN43@Win32MainW:
   000dc	8b 45 b0	 mov	 eax, DWORD PTR tv70[ebp]
   000df	89 45 a4	 mov	 DWORD PTR _wasDown$5[ebp], eax
 
-; 338  : 		bool32 isDown = ((LParam & (1 << 31)) == 0);
+; 339  : 		bool32 isDown = ((LParam & (1 << 31)) == 0);
 
   000e2	8b 4d 14	 mov	 ecx, DWORD PTR _LParam$[ebp]
   000e5	81 e1 00 00 00
@@ -1045,132 +1426,132 @@ $LN45@Win32MainW:
   000fd	8b 55 ac	 mov	 edx, DWORD PTR tv73[ebp]
   00100	89 55 a8	 mov	 DWORD PTR _isDown$6[ebp], edx
 
-; 339  : 		if (wasDown != isDown)
+; 340  : 		if (wasDown != isDown)
 
   00103	8b 45 a4	 mov	 eax, DWORD PTR _wasDown$5[ebp]
   00106	3b 45 a8	 cmp	 eax, DWORD PTR _isDown$6[ebp]
   00109	74 40		 je	 SHORT $LN11@Win32MainW
 
-; 340  : 		{
-; 341  : 			if (VKCode == 'W')
+; 341  : 		{
+; 342  : 			if (VKCode == 'W')
 
   0010b	83 7d b8 57	 cmp	 DWORD PTR _VKCode$7[ebp], 87 ; 00000057H
   0010f	75 3a		 jne	 SHORT $LN11@Win32MainW
 
-; 342  : 			{
-; 343  : 				OutputDebugStringA("W: ");
+; 343  : 			{
+; 344  : 				OutputDebugStringA("W: ");
 
-  00111	68 00 00 00 00	 push	 OFFSET $SG95494
+  00111	68 00 00 00 00	 push	 OFFSET $SG98278
   00116	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__OutputDebugStringA@4
 
-; 344  : 				if (isDown)
+; 345  : 				if (isDown)
 
   0011c	83 7d a8 00	 cmp	 DWORD PTR _isDown$6[ebp], 0
   00120	74 0d		 je	 SHORT $LN14@Win32MainW
 
-; 345  : 				{
-; 346  : 					OutputDebugStringA("isDown ");
+; 346  : 				{
+; 347  : 					OutputDebugStringA("isDown ");
 
-  00122	68 00 00 00 00	 push	 OFFSET $SG95497
+  00122	68 00 00 00 00	 push	 OFFSET $SG98281
   00127	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__OutputDebugStringA@4
 
-; 347  : 				}
+; 348  : 				}
 
   0012d	eb 11		 jmp	 SHORT $LN15@Win32MainW
 $LN14@Win32MainW:
 
-; 348  : 				else if (wasDown)
+; 349  : 				else if (wasDown)
 
   0012f	83 7d a4 00	 cmp	 DWORD PTR _wasDown$5[ebp], 0
   00133	74 0b		 je	 SHORT $LN15@Win32MainW
 
-; 349  : 				{
-; 350  : 					OutputDebugStringA("wasDown ");
+; 350  : 				{
+; 351  : 					OutputDebugStringA("wasDown ");
 
-  00135	68 00 00 00 00	 push	 OFFSET $SG95499
+  00135	68 00 00 00 00	 push	 OFFSET $SG98283
   0013a	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__OutputDebugStringA@4
 $LN15@Win32MainW:
 
-; 351  : 				}
-; 352  : 				OutputDebugStringA("\n");
+; 352  : 				}
+; 353  : 				OutputDebugStringA("\n");
 
-  00140	68 00 00 00 00	 push	 OFFSET $SG95500
+  00140	68 00 00 00 00	 push	 OFFSET $SG98284
   00145	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__OutputDebugStringA@4
 $LN11@Win32MainW:
 
-; 353  : 			}
-; 354  : 			else if (VKCode == 'A')
-; 355  : 			{
-; 356  : 			}
-; 357  : 			else if (VKCode == 'S')
-; 358  : 			{
-; 359  : 			}
-; 360  : 			else if (VKCode == 'D')
-; 361  : 			{
-; 362  : 			}
-; 363  : 			else if (VKCode == 'Q')
-; 364  : 			{
-; 365  : 			}
-; 366  : 			else if (VKCode == 'E')
-; 367  : 			{
-; 368  : 			}
-; 369  : 			else if (VKCode == VK_UP)
-; 370  : 			{
-; 371  : 			}
-; 372  : 			else if (VKCode == VK_LEFT)
-; 373  : 			{
-; 374  : 			}
-; 375  : 			else if (VKCode == VK_DOWN)
-; 376  : 			{
-; 377  : 			}
-; 378  : 			else if (VKCode == VK_RIGHT)
-; 379  : 			{
-; 380  : 			}
-; 381  : 			else if (VKCode == VK_ESCAPE)
-; 382  : 			{
-; 383  : 			}
-; 384  : 			else if (VKCode == VK_SPACE)
-; 385  : 			{
-; 386  : 			}
-; 387  : 		}
-; 388  : 
-; 389  : 		bool32 AltKeyDown = (LParam & (1 << 29));
+; 354  : 			}
+; 355  : 			else if (VKCode == 'A')
+; 356  : 			{
+; 357  : 			}
+; 358  : 			else if (VKCode == 'S')
+; 359  : 			{
+; 360  : 			}
+; 361  : 			else if (VKCode == 'D')
+; 362  : 			{
+; 363  : 			}
+; 364  : 			else if (VKCode == 'Q')
+; 365  : 			{
+; 366  : 			}
+; 367  : 			else if (VKCode == 'E')
+; 368  : 			{
+; 369  : 			}
+; 370  : 			else if (VKCode == VK_UP)
+; 371  : 			{
+; 372  : 			}
+; 373  : 			else if (VKCode == VK_LEFT)
+; 374  : 			{
+; 375  : 			}
+; 376  : 			else if (VKCode == VK_DOWN)
+; 377  : 			{
+; 378  : 			}
+; 379  : 			else if (VKCode == VK_RIGHT)
+; 380  : 			{
+; 381  : 			}
+; 382  : 			else if (VKCode == VK_ESCAPE)
+; 383  : 			{
+; 384  : 			}
+; 385  : 			else if (VKCode == VK_SPACE)
+; 386  : 			{
+; 387  : 			}
+; 388  : 		}
+; 389  : 
+; 390  : 		bool32 AltKeyDown = (LParam & (1 << 29));
 
   0014b	8b 4d 14	 mov	 ecx, DWORD PTR _LParam$[ebp]
   0014e	81 e1 00 00 00
 	20		 and	 ecx, 536870912		; 20000000H
   00154	89 4d 9c	 mov	 DWORD PTR _AltKeyDown$4[ebp], ecx
 
-; 390  : 		if ((VKCode == VK_F4) && AltKeyDown)
+; 391  : 		if ((VKCode == VK_F4) && AltKeyDown)
 
   00157	83 7d b8 73	 cmp	 DWORD PTR _VKCode$7[ebp], 115 ; 00000073H
   0015b	75 10		 jne	 SHORT $LN38@Win32MainW
   0015d	83 7d 9c 00	 cmp	 DWORD PTR _AltKeyDown$4[ebp], 0
   00161	74 0a		 je	 SHORT $LN38@Win32MainW
 
-; 391  : 		{
-; 392  : 			g_running = false;
+; 392  : 		{
+; 393  : 			g_running = false;
 
   00163	c7 05 00 00 00
 	00 00 00 00 00	 mov	 DWORD PTR ?g_running@@3HA, 0
 $LN38@Win32MainW:
 
-; 393  : 		}
-; 394  : 
-; 395  : 	} break;
+; 394  : 		}
+; 395  : 
+; 396  : 	} break;
 
   0016d	eb 71		 jmp	 SHORT $LN2@Win32MainW
 $LN39@Win32MainW:
 
-; 396  : 
-; 397  : 	case WM_PAINT:
-; 398  : 	{
-; 399  : 		PAINTSTRUCT Paint;
-; 400  : 		HDC DeviceContext = BeginPaint(Window, &Paint);
+; 397  : 
+; 398  : 	case WM_PAINT:
+; 399  : 	{
+; 400  : 		PAINTSTRUCT Paint;
+; 401  : 		HDC DeviceContext = BeginPaint(Window, &Paint);
 
   0016f	8d 55 bc	 lea	 edx, DWORD PTR _Paint$8[ebp]
   00172	52		 push	 edx
@@ -1180,7 +1561,7 @@ $LN39@Win32MainW:
 	00		 call	 DWORD PTR __imp__BeginPaint@8
   0017d	89 45 98	 mov	 DWORD PTR _DeviceContext$3[ebp], eax
 
-; 401  : 		window_dimensions dimensions = Win32GetWindowDimensions(Window);
+; 402  : 		window_dimensions dimensions = Win32GetWindowDimensions(Window);
 
   00180	8b 4d 08	 mov	 ecx, DWORD PTR _Window$[ebp]
   00183	51		 push	 ecx
@@ -1193,8 +1574,8 @@ $LN39@Win32MainW:
   00198	89 55 88	 mov	 DWORD PTR _dimensions$1[ebp], edx
   0019b	89 45 8c	 mov	 DWORD PTR _dimensions$1[ebp+4], eax
 
-; 402  : 
-; 403  : 		Win32DisplayBufferToWindow(
+; 403  : 
+; 404  : 		Win32DisplayBufferToWindow(
 
   0019e	8b 4d 8c	 mov	 ecx, DWORD PTR _dimensions$1[ebp+4]
   001a1	51		 push	 ecx
@@ -1206,10 +1587,10 @@ $LN39@Win32MainW:
   001af	e8 00 00 00 00	 call	 ?Win32DisplayBufferToWindow@@YAXPAUoffscreen_buffer@@PAUHDC__@@HH@Z ; Win32DisplayBufferToWindow
   001b4	83 c4 10	 add	 esp, 16			; 00000010H
 
-; 404  : 			&g_back_buffer,
-; 405  : 			DeviceContext,
-; 406  : 			dimensions.width, dimensions.height);
-; 407  : 		EndPaint(Window, &Paint);
+; 405  : 			&g_back_buffer,
+; 406  : 			DeviceContext,
+; 407  : 			dimensions.width, dimensions.height);
+; 408  : 		EndPaint(Window, &Paint);
 
   001b7	8d 4d bc	 lea	 ecx, DWORD PTR _Paint$8[ebp]
   001ba	51		 push	 ecx
@@ -1218,15 +1599,15 @@ $LN39@Win32MainW:
   001bf	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__EndPaint@8
 
-; 408  : 	} break;
+; 409  : 	} break;
 
   001c5	eb 19		 jmp	 SHORT $LN2@Win32MainW
 $LN40@Win32MainW:
 
-; 409  : 
-; 410  : 	default:
-; 411  : 	{
-; 412  : 		result = DefWindowProcA(Window, Message, WParam, LParam);
+; 410  : 
+; 411  : 	default:
+; 412  : 	{
+; 413  : 		result = DefWindowProcA(Window, Message, WParam, LParam);
 
   001c7	8b 45 14	 mov	 eax, DWORD PTR _LParam$[ebp]
   001ca	50		 push	 eax
@@ -1241,14 +1622,14 @@ $LN40@Win32MainW:
   001dd	89 45 a0	 mov	 DWORD PTR _result$[ebp], eax
 $LN2@Win32MainW:
 
-; 413  : 	} break;
-; 414  : 	}
-; 415  : 
-; 416  : 	return(result);
+; 414  : 	} break;
+; 415  : 	}
+; 416  : 
+; 417  : 	return(result);
 
   001e0	8b 45 a0	 mov	 eax, DWORD PTR _result$[ebp]
 
-; 417  : }
+; 418  : }
 
   001e3	8b 4d fc	 mov	 ecx, DWORD PTR __$ArrayPad$[ebp]
   001e6	33 cd		 xor	 ecx, ebp
@@ -1302,12 +1683,12 @@ _windowWidth$ = 16					; size = 4
 _windowHeight$ = 20					; size = 4
 ?Win32DisplayBufferToWindow@@YAXPAUoffscreen_buffer@@PAUHDC__@@HH@Z PROC ; Win32DisplayBufferToWindow
 
-; 293  : {
+; 294  : {
 
   00000	55		 push	 ebp
   00001	8b ec		 mov	 ebp, esp
 
-; 294  : 	StretchDIBits(
+; 295  : 	StretchDIBits(
 
   00003	68 20 00 cc 00	 push	 13369376		; 00cc0020H
   00008	6a 00		 push	 0
@@ -1335,16 +1716,16 @@ _windowHeight$ = 20					; size = 4
   00037	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__StretchDIBits@52
 
-; 295  : 		DeviceContext,
-; 296  : 		/* dest: x, y, width, height,
-; 297  : 		   src:	 x, y, width, height,*/
-; 298  : 		0, 0, windowWidth, windowHeight,
-; 299  : 		0, 0, buffer->width, buffer->height,
-; 300  : 		buffer->memory,
-; 301  : 		&buffer->info,
-; 302  : 		DIB_RGB_COLORS,
-; 303  : 		SRCCOPY);
-; 304  : }
+; 296  : 		DeviceContext,
+; 297  : 		/* dest: x, y, width, height,
+; 298  : 		   src:	 x, y, width, height,*/
+; 299  : 		0, 0, windowWidth, windowHeight,
+; 300  : 		0, 0, buffer->width, buffer->height,
+; 301  : 		buffer->memory,
+; 302  : 		&buffer->info,
+; 303  : 		DIB_RGB_COLORS,
+; 304  : 		SRCCOPY);
+; 305  : }
 
   0003d	5d		 pop	 ebp
   0003e	c3		 ret	 0
@@ -1360,20 +1741,20 @@ _width$ = 12						; size = 4
 _height$ = 16						; size = 4
 ?Win32ResizeDIBSection@@YAXPAUoffscreen_buffer@@HH@Z PROC ; Win32ResizeDIBSection
 
-; 265  : {
+; 266  : {
 
   00000	55		 push	 ebp
   00001	8b ec		 mov	 ebp, esp
   00003	83 ec 08	 sub	 esp, 8
 
-; 266  : 	if (buffer->memory)
+; 267  : 	if (buffer->memory)
 
   00006	8b 45 08	 mov	 eax, DWORD PTR _buffer$[ebp]
   00009	83 78 2c 00	 cmp	 DWORD PTR [eax+44], 0
   0000d	74 14		 je	 SHORT $LN2@Win32Resiz
 
-; 267  : 	{
-; 268  : 		VirtualFree(buffer->memory, 0, MEM_RELEASE);
+; 268  : 	{
+; 269  : 		VirtualFree(buffer->memory, 0, MEM_RELEASE);
 
   0000f	68 00 80 00 00	 push	 32768			; 00008000H
   00014	6a 00		 push	 0
@@ -1384,40 +1765,40 @@ _height$ = 16						; size = 4
 	00		 call	 DWORD PTR __imp__VirtualFree@12
 $LN2@Win32Resiz:
 
-; 269  : 	}
-; 270  : 
-; 271  : 	buffer->width = width;
+; 270  : 	}
+; 271  : 
+; 272  : 	buffer->width = width;
 
   00023	8b 45 08	 mov	 eax, DWORD PTR _buffer$[ebp]
   00026	8b 4d 0c	 mov	 ecx, DWORD PTR _width$[ebp]
   00029	89 48 30	 mov	 DWORD PTR [eax+48], ecx
 
-; 272  : 	buffer->height = height;
+; 273  : 	buffer->height = height;
 
   0002c	8b 55 08	 mov	 edx, DWORD PTR _buffer$[ebp]
   0002f	8b 45 10	 mov	 eax, DWORD PTR _height$[ebp]
   00032	89 42 34	 mov	 DWORD PTR [edx+52], eax
 
-; 273  : 	int bytesPerPixel = 4;
+; 274  : 	int bytesPerPixel = 4;
 
   00035	c7 45 fc 04 00
 	00 00		 mov	 DWORD PTR _bytesPerPixel$[ebp], 4
 
-; 274  : 
-; 275  : 	buffer->info.bmiHeader.biSize = sizeof(buffer->info.bmiHeader);
+; 275  : 
+; 276  : 	buffer->info.bmiHeader.biSize = sizeof(buffer->info.bmiHeader);
 
   0003c	8b 4d 08	 mov	 ecx, DWORD PTR _buffer$[ebp]
   0003f	c7 01 28 00 00
 	00		 mov	 DWORD PTR [ecx], 40	; 00000028H
 
-; 276  : 	buffer->info.bmiHeader.biWidth = buffer->width;
+; 277  : 	buffer->info.bmiHeader.biWidth = buffer->width;
 
   00045	8b 55 08	 mov	 edx, DWORD PTR _buffer$[ebp]
   00048	8b 45 08	 mov	 eax, DWORD PTR _buffer$[ebp]
   0004b	8b 48 30	 mov	 ecx, DWORD PTR [eax+48]
   0004e	89 4a 04	 mov	 DWORD PTR [edx+4], ecx
 
-; 277  : 	buffer->info.bmiHeader.biHeight = -buffer->height;
+; 278  : 	buffer->info.bmiHeader.biHeight = -buffer->height;
 
   00051	8b 55 08	 mov	 edx, DWORD PTR _buffer$[ebp]
   00054	8b 42 34	 mov	 eax, DWORD PTR [edx+52]
@@ -1425,26 +1806,26 @@ $LN2@Win32Resiz:
   00059	8b 4d 08	 mov	 ecx, DWORD PTR _buffer$[ebp]
   0005c	89 41 08	 mov	 DWORD PTR [ecx+8], eax
 
-; 278  : 	buffer->info.bmiHeader.biPlanes = 1;
+; 279  : 	buffer->info.bmiHeader.biPlanes = 1;
 
   0005f	ba 01 00 00 00	 mov	 edx, 1
   00064	8b 45 08	 mov	 eax, DWORD PTR _buffer$[ebp]
   00067	66 89 50 0c	 mov	 WORD PTR [eax+12], dx
 
-; 279  : 	buffer->info.bmiHeader.biBitCount = 32;
+; 280  : 	buffer->info.bmiHeader.biBitCount = 32;
 
   0006b	b9 20 00 00 00	 mov	 ecx, 32			; 00000020H
   00070	8b 55 08	 mov	 edx, DWORD PTR _buffer$[ebp]
   00073	66 89 4a 0e	 mov	 WORD PTR [edx+14], cx
 
-; 280  : 	buffer->info.bmiHeader.biCompression = BI_RGB;
+; 281  : 	buffer->info.bmiHeader.biCompression = BI_RGB;
 
   00077	8b 45 08	 mov	 eax, DWORD PTR _buffer$[ebp]
   0007a	c7 40 10 00 00
 	00 00		 mov	 DWORD PTR [eax+16], 0
 
-; 281  : 
-; 282  : 	int bitmapMemorySize = (buffer->width * buffer->height) * bytesPerPixel;
+; 282  : 
+; 283  : 	int bitmapMemorySize = (buffer->width * buffer->height) * bytesPerPixel;
 
   00081	8b 4d 08	 mov	 ecx, DWORD PTR _buffer$[ebp]
   00084	8b 55 08	 mov	 edx, DWORD PTR _buffer$[ebp]
@@ -1453,7 +1834,7 @@ $LN2@Win32Resiz:
   0008e	0f af 45 fc	 imul	 eax, DWORD PTR _bytesPerPixel$[ebp]
   00092	89 45 f8	 mov	 DWORD PTR _bitmapMemorySize$[ebp], eax
 
-; 283  : 	buffer->memory = VirtualAlloc(0, bitmapMemorySize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+; 284  : 	buffer->memory = VirtualAlloc(0, bitmapMemorySize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 
   00095	6a 04		 push	 4
   00097	68 00 30 00 00	 push	 12288			; 00003000H
@@ -1465,15 +1846,15 @@ $LN2@Win32Resiz:
   000a8	8b 55 08	 mov	 edx, DWORD PTR _buffer$[ebp]
   000ab	89 42 2c	 mov	 DWORD PTR [edx+44], eax
 
-; 284  : 	buffer->pitch = width * bytesPerPixel;
+; 285  : 	buffer->pitch = width * bytesPerPixel;
 
   000ae	8b 45 0c	 mov	 eax, DWORD PTR _width$[ebp]
   000b1	0f af 45 fc	 imul	 eax, DWORD PTR _bytesPerPixel$[ebp]
   000b5	8b 4d 08	 mov	 ecx, DWORD PTR _buffer$[ebp]
   000b8	89 41 38	 mov	 DWORD PTR [ecx+56], eax
 
-; 285  : 
-; 286  : }
+; 286  : 
+; 287  : }
 
   000bb	8b e5		 mov	 esp, ebp
   000bd	5d		 pop	 ebp
@@ -1496,20 +1877,20 @@ _greenOffset$ = 16					; size = 4
 _redOffset$ = 20					; size = 4
 ?Win32RenderColor@@YAXPAUoffscreen_buffer@@HHH@Z PROC	; Win32RenderColor
 
-; 241  : {
+; 242  : {
 
   00000	55		 push	 ebp
   00001	8b ec		 mov	 ebp, esp
   00003	83 ec 14	 sub	 esp, 20			; 00000014H
 
-; 242  : 
-; 243  : 	uint8* row = (uint8*)buffer->memory;
+; 243  : 
+; 244  : 	uint8* row = (uint8*)buffer->memory;
 
   00006	8b 45 08	 mov	 eax, DWORD PTR _buffer$[ebp]
   00009	8b 48 2c	 mov	 ecx, DWORD PTR [eax+44]
   0000c	89 4d ec	 mov	 DWORD PTR _row$[ebp], ecx
 
-; 244  : 	for (int y = 0; y < buffer->height; ++y)
+; 245  : 	for (int y = 0; y < buffer->height; ++y)
 
   0000f	c7 45 f4 00 00
 	00 00		 mov	 DWORD PTR _y$2[ebp], 0
@@ -1524,13 +1905,13 @@ $LN4@Win32Rende:
   00027	3b 48 34	 cmp	 ecx, DWORD PTR [eax+52]
   0002a	7d 72		 jge	 SHORT $LN1@Win32Rende
 
-; 245  : 	{
-; 246  : 		uint32* pixel = (uint32*)row;
+; 246  : 	{
+; 247  : 		uint32* pixel = (uint32*)row;
 
   0002c	8b 55 ec	 mov	 edx, DWORD PTR _row$[ebp]
   0002f	89 55 f0	 mov	 DWORD PTR _pixel$1[ebp], edx
 
-; 247  : 		for (int x = 0; x < buffer->width; ++x)
+; 248  : 		for (int x = 0; x < buffer->width; ++x)
 
   00032	c7 45 f8 00 00
 	00 00		 mov	 DWORD PTR _x$3[ebp], 0
@@ -1545,30 +1926,30 @@ $LN7@Win32Rende:
   0004a	3b 51 30	 cmp	 edx, DWORD PTR [ecx+48]
   0004d	7d 3e		 jge	 SHORT $LN6@Win32Rende
 
-; 248  : 		{
-; 249  : 			/*
-; 250  : 			* Memory:	BB GG RR xx
-; 251  : 			* Register:	xx RR GG BB
-; 252  : 			*/
-; 253  : 			uint8 blue = (x + blueOffset);
+; 249  : 		{
+; 250  : 			/*
+; 251  : 			* Memory:	BB GG RR xx
+; 252  : 			* Register:	xx RR GG BB
+; 253  : 			*/
+; 254  : 			uint8 blue = (x + blueOffset);
 
   0004f	8b 45 f8	 mov	 eax, DWORD PTR _x$3[ebp]
   00052	03 45 0c	 add	 eax, DWORD PTR _blueOffset$[ebp]
   00055	88 45 ff	 mov	 BYTE PTR _blue$6[ebp], al
 
-; 254  : 			uint8 green = (y + greenOffset);
+; 255  : 			uint8 green = (y + greenOffset);
 
   00058	8b 4d f4	 mov	 ecx, DWORD PTR _y$2[ebp]
   0005b	03 4d 10	 add	 ecx, DWORD PTR _greenOffset$[ebp]
   0005e	88 4d fe	 mov	 BYTE PTR _green$5[ebp], cl
 
-; 255  : 			uint8 red = (0 + redOffset);
+; 256  : 			uint8 red = (0 + redOffset);
 
   00061	8a 55 14	 mov	 dl, BYTE PTR _redOffset$[ebp]
   00064	88 55 fd	 mov	 BYTE PTR _red$4[ebp], dl
 
-; 256  : 
-; 257  : 			*pixel++ = (blue | (green << 8) | (red << 16));
+; 257  : 
+; 258  : 			*pixel++ = (blue | (green << 8) | (red << 16));
 
   00067	0f b6 45 ff	 movzx	 eax, BYTE PTR _blue$6[ebp]
   0006b	0f b6 4d fe	 movzx	 ecx, BYTE PTR _green$5[ebp]
@@ -1583,25 +1964,25 @@ $LN7@Win32Rende:
   00085	83 c2 04	 add	 edx, 4
   00088	89 55 f0	 mov	 DWORD PTR _pixel$1[ebp], edx
 
-; 258  : 		}
+; 259  : 		}
 
   0008b	eb ae		 jmp	 SHORT $LN5@Win32Rende
 $LN6@Win32Rende:
 
-; 259  : 
-; 260  : 		row += buffer->pitch;
+; 260  : 
+; 261  : 		row += buffer->pitch;
 
   0008d	8b 45 08	 mov	 eax, DWORD PTR _buffer$[ebp]
   00090	8b 4d ec	 mov	 ecx, DWORD PTR _row$[ebp]
   00093	03 48 38	 add	 ecx, DWORD PTR [eax+56]
   00096	89 4d ec	 mov	 DWORD PTR _row$[ebp], ecx
 
-; 261  : 	}
+; 262  : 	}
 
   00099	e9 7a ff ff ff	 jmp	 $LN2@Win32Rende
 $LN1@Win32Rende:
 
-; 262  : }
+; 263  : }
 
   0009e	8b e5		 mov	 esp, ebp
   000a0	5d		 pop	 ebp
@@ -1617,7 +1998,7 @@ __$ArrayPad$ = -4					; size = 4
 _Window$ = 8						; size = 4
 ?Win32GetWindowDimensions@@YA?AUwindow_dimensions@@PAUHWND__@@@Z PROC ; Win32GetWindowDimensions
 
-; 229  : {
+; 230  : {
 
   00000	55		 push	 ebp
   00001	8b ec		 mov	 ebp, esp
@@ -1626,10 +2007,10 @@ _Window$ = 8						; size = 4
   0000b	33 c5		 xor	 eax, ebp
   0000d	89 45 fc	 mov	 DWORD PTR __$ArrayPad$[ebp], eax
 
-; 230  : 	window_dimensions result;
-; 231  : 
-; 232  : 	RECT ClientRect;
-; 233  : 	GetClientRect(Window, &ClientRect);
+; 231  : 	window_dimensions result;
+; 232  : 
+; 233  : 	RECT ClientRect;
+; 234  : 	GetClientRect(Window, &ClientRect);
 
   00010	8d 45 ec	 lea	 eax, DWORD PTR _ClientRect$[ebp]
   00013	50		 push	 eax
@@ -1638,25 +2019,25 @@ _Window$ = 8						; size = 4
   00018	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__GetClientRect@8
 
-; 234  : 	result.width = ClientRect.right - ClientRect.left;
+; 235  : 	result.width = ClientRect.right - ClientRect.left;
 
   0001e	8b 55 f4	 mov	 edx, DWORD PTR _ClientRect$[ebp+8]
   00021	2b 55 ec	 sub	 edx, DWORD PTR _ClientRect$[ebp]
   00024	89 55 e4	 mov	 DWORD PTR _result$[ebp], edx
 
-; 235  : 	result.height = ClientRect.bottom - ClientRect.top;
+; 236  : 	result.height = ClientRect.bottom - ClientRect.top;
 
   00027	8b 45 f8	 mov	 eax, DWORD PTR _ClientRect$[ebp+12]
   0002a	2b 45 f0	 sub	 eax, DWORD PTR _ClientRect$[ebp+4]
   0002d	89 45 e8	 mov	 DWORD PTR _result$[ebp+4], eax
 
-; 236  : 
-; 237  : 	return(result);
+; 237  : 
+; 238  : 	return(result);
 
   00030	8b 45 e4	 mov	 eax, DWORD PTR _result$[ebp]
   00033	8b 55 e8	 mov	 edx, DWORD PTR _result$[ebp+4]
 
-; 238  : }
+; 239  : }
 
   00036	8b 4d fc	 mov	 ecx, DWORD PTR __$ArrayPad$[ebp]
   00039	33 cd		 xor	 ecx, ebp
@@ -1687,18 +2068,18 @@ _byteToLock$ = 12					; size = 4
 _bytesToWrite$ = 16					; size = 4
 ?Win32FillSoundBuffer@@YAXPAUsound_output@@KK@Z PROC	; Win32FillSoundBuffer
 
-; 183  : {
+; 184  : {
 
   00000	55		 push	 ebp
   00001	8b ec		 mov	 ebp, esp
   00003	83 ec 34	 sub	 esp, 52			; 00000034H
 
-; 184  : 	VOID* Region1;
-; 185  : 	DWORD Region1Size;
-; 186  : 	VOID* Region2;
-; 187  : 	DWORD Region2Size;
-; 188  : 
-; 189  : 	if (SUCCEEDED(g_secondary_buffer->Lock(
+; 185  : 	VOID* Region1;
+; 186  : 	DWORD Region1Size;
+; 187  : 	VOID* Region2;
+; 188  : 	DWORD Region2Size;
+; 189  : 
+; 190  : 	if (SUCCEEDED(g_secondary_buffer->Lock(
 
   00006	6a 00		 push	 0
   00008	8d 45 e8	 lea	 eax, DWORD PTR _Region2Size$[ebp]
@@ -1724,13 +2105,13 @@ _bytesToWrite$ = 16					; size = 4
   00035	0f 8c a5 01 00
 	00		 jl	 $LN8@Win32FillS
 
-; 190  : 		byteToLock, bytesToWrite,
-; 191  : 		&Region1, &Region1Size,
-; 192  : 		&Region2, &Region2Size,
-; 193  : 		0)))
-; 194  : 	{
-; 195  : 
-; 196  : 		DWORD region1SampleCount = Region1Size / soundOutput->bytesPerSample;
+; 191  : 		byteToLock, bytesToWrite,
+; 192  : 		&Region1, &Region1Size,
+; 193  : 		&Region2, &Region2Size,
+; 194  : 		0)))
+; 195  : 	{
+; 196  : 
+; 197  : 		DWORD region1SampleCount = Region1Size / soundOutput->bytesPerSample;
 
   0003b	8b 4d 08	 mov	 ecx, DWORD PTR _soundOutput$[ebp]
   0003e	8b 45 e0	 mov	 eax, DWORD PTR _Region1Size$[ebp]
@@ -1738,12 +2119,12 @@ _bytesToWrite$ = 16					; size = 4
   00043	f7 71 14	 div	 DWORD PTR [ecx+20]
   00046	89 45 d8	 mov	 DWORD PTR _region1SampleCount$4[ebp], eax
 
-; 197  : 		int16* SampleOut = (int16*)Region1;
+; 198  : 		int16* SampleOut = (int16*)Region1;
 
   00049	8b 55 dc	 mov	 edx, DWORD PTR _Region1$[ebp]
   0004c	89 55 f4	 mov	 DWORD PTR _SampleOut$7[ebp], edx
 
-; 198  : 		for (DWORD SampleIndex = 0; SampleIndex < region1SampleCount; ++SampleIndex)
+; 199  : 		for (DWORD SampleIndex = 0; SampleIndex < region1SampleCount; ++SampleIndex)
 
   0004f	c7 45 f0 00 00
 	00 00		 mov	 DWORD PTR _SampleIndex$6[ebp], 0
@@ -1758,8 +2139,8 @@ $LN4@Win32FillS:
   00067	0f 83 8f 00 00
 	00		 jae	 $LN3@Win32FillS
 
-; 199  : 		{
-; 200  : 			real32 sineValue = sinf(soundOutput->tSine);
+; 200  : 		{
+; 201  : 			real32 sineValue = sinf(soundOutput->tSine);
 
   0006d	8b 55 08	 mov	 edx, DWORD PTR _soundOutput$[ebp]
   00070	51		 push	 ecx
@@ -1769,7 +2150,7 @@ $LN4@Win32FillS:
   00080	83 c4 04	 add	 esp, 4
   00083	d9 5d d4	 fstp	 DWORD PTR _sineValue$3[ebp]
 
-; 201  : 			int16 sampleValue = (int16)(sineValue * soundOutput->toneVolume);
+; 202  : 			int16 sampleValue = (int16)(sineValue * soundOutput->toneVolume);
 
   00086	8b 45 08	 mov	 eax, DWORD PTR _soundOutput$[ebp]
   00089	0f bf 48 08	 movsx	 ecx, WORD PTR [eax+8]
@@ -1778,7 +2159,7 @@ $LN4@Win32FillS:
   00096	f3 0f 2c d0	 cvttss2si edx, xmm0
   0009a	66 89 55 fc	 mov	 WORD PTR _sampleValue$9[ebp], dx
 
-; 202  : 			*SampleOut++ = sampleValue;
+; 203  : 			*SampleOut++ = sampleValue;
 
   0009e	8b 45 f4	 mov	 eax, DWORD PTR _SampleOut$7[ebp]
   000a1	66 8b 4d fc	 mov	 cx, WORD PTR _sampleValue$9[ebp]
@@ -1787,7 +2168,7 @@ $LN4@Win32FillS:
   000ab	83 c2 02	 add	 edx, 2
   000ae	89 55 f4	 mov	 DWORD PTR _SampleOut$7[ebp], edx
 
-; 203  : 			*SampleOut++ = sampleValue;
+; 204  : 			*SampleOut++ = sampleValue;
 
   000b1	8b 45 f4	 mov	 eax, DWORD PTR _SampleOut$7[ebp]
   000b4	66 8b 4d fc	 mov	 cx, WORD PTR _sampleValue$9[ebp]
@@ -1796,8 +2177,8 @@ $LN4@Win32FillS:
   000be	83 c2 02	 add	 edx, 2
   000c1	89 55 f4	 mov	 DWORD PTR _SampleOut$7[ebp], edx
 
-; 204  : 
-; 205  : 			soundOutput->tSine += (2.0f * pi32 * 1.0f) / ((real32)soundOutput->wavePeriod);
+; 205  : 
+; 206  : 			soundOutput->tSine += (2.0f * pi32 * 1.0f) / ((real32)soundOutput->wavePeriod);
 
   000c4	8b 45 08	 mov	 eax, DWORD PTR _soundOutput$[ebp]
   000c7	f3 0f 2a 40 10	 cvtsi2ss xmm0, DWORD PTR [eax+16]
@@ -1809,7 +2190,7 @@ $LN4@Win32FillS:
   000e0	8b 55 08	 mov	 edx, DWORD PTR _soundOutput$[ebp]
   000e3	f3 0f 11 4a 1c	 movss	 DWORD PTR [edx+28], xmm1
 
-; 206  : 			++soundOutput->runningSampleIndex;
+; 207  : 			++soundOutput->runningSampleIndex;
 
   000e8	8b 45 08	 mov	 eax, DWORD PTR _soundOutput$[ebp]
   000eb	8b 48 0c	 mov	 ecx, DWORD PTR [eax+12]
@@ -1817,13 +2198,13 @@ $LN4@Win32FillS:
   000f1	8b 55 08	 mov	 edx, DWORD PTR _soundOutput$[ebp]
   000f4	89 4a 0c	 mov	 DWORD PTR [edx+12], ecx
 
-; 207  : 		}
+; 208  : 		}
 
   000f7	e9 5c ff ff ff	 jmp	 $LN2@Win32FillS
 $LN3@Win32FillS:
 
-; 208  : 
-; 209  : 		DWORD region2SampleCount = Region2Size / soundOutput->bytesPerSample;
+; 209  : 
+; 210  : 		DWORD region2SampleCount = Region2Size / soundOutput->bytesPerSample;
 
   000fc	8b 4d 08	 mov	 ecx, DWORD PTR _soundOutput$[ebp]
   000ff	8b 45 e8	 mov	 eax, DWORD PTR _Region2Size$[ebp]
@@ -1831,12 +2212,12 @@ $LN3@Win32FillS:
   00104	f7 71 14	 div	 DWORD PTR [ecx+20]
   00107	89 45 d0	 mov	 DWORD PTR _region2SampleCount$2[ebp], eax
 
-; 210  : 		SampleOut = (int16*)Region2;
+; 211  : 		SampleOut = (int16*)Region2;
 
   0010a	8b 55 e4	 mov	 edx, DWORD PTR _Region2$[ebp]
   0010d	89 55 f4	 mov	 DWORD PTR _SampleOut$7[ebp], edx
 
-; 211  : 		for (DWORD SampleIndex = 0; SampleIndex < region2SampleCount; ++SampleIndex)
+; 212  : 		for (DWORD SampleIndex = 0; SampleIndex < region2SampleCount; ++SampleIndex)
 
   00110	c7 45 ec 00 00
 	00 00		 mov	 DWORD PTR _SampleIndex$5[ebp], 0
@@ -1851,8 +2232,8 @@ $LN7@Win32FillS:
   00128	0f 83 8f 00 00
 	00		 jae	 $LN6@Win32FillS
 
-; 212  : 		{
-; 213  : 			real32 sineValue = sinf(soundOutput->tSine);
+; 213  : 		{
+; 214  : 			real32 sineValue = sinf(soundOutput->tSine);
 
   0012e	8b 55 08	 mov	 edx, DWORD PTR _soundOutput$[ebp]
   00131	51		 push	 ecx
@@ -1862,7 +2243,7 @@ $LN7@Win32FillS:
   00141	83 c4 04	 add	 esp, 4
   00144	d9 5d cc	 fstp	 DWORD PTR _sineValue$1[ebp]
 
-; 214  : 			int16 sampleValue = (int16)(sineValue * soundOutput->toneVolume);
+; 215  : 			int16 sampleValue = (int16)(sineValue * soundOutput->toneVolume);
 
   00147	8b 45 08	 mov	 eax, DWORD PTR _soundOutput$[ebp]
   0014a	0f bf 48 08	 movsx	 ecx, WORD PTR [eax+8]
@@ -1871,7 +2252,7 @@ $LN7@Win32FillS:
   00157	f3 0f 2c d0	 cvttss2si edx, xmm0
   0015b	66 89 55 f8	 mov	 WORD PTR _sampleValue$8[ebp], dx
 
-; 215  : 			*SampleOut++ = sampleValue;
+; 216  : 			*SampleOut++ = sampleValue;
 
   0015f	8b 45 f4	 mov	 eax, DWORD PTR _SampleOut$7[ebp]
   00162	66 8b 4d f8	 mov	 cx, WORD PTR _sampleValue$8[ebp]
@@ -1880,7 +2261,7 @@ $LN7@Win32FillS:
   0016c	83 c2 02	 add	 edx, 2
   0016f	89 55 f4	 mov	 DWORD PTR _SampleOut$7[ebp], edx
 
-; 216  : 			*SampleOut++ = sampleValue;
+; 217  : 			*SampleOut++ = sampleValue;
 
   00172	8b 45 f4	 mov	 eax, DWORD PTR _SampleOut$7[ebp]
   00175	66 8b 4d f8	 mov	 cx, WORD PTR _sampleValue$8[ebp]
@@ -1889,8 +2270,8 @@ $LN7@Win32FillS:
   0017f	83 c2 02	 add	 edx, 2
   00182	89 55 f4	 mov	 DWORD PTR _SampleOut$7[ebp], edx
 
-; 217  : 
-; 218  : 			soundOutput->tSine += (2.0f * pi32 * 1.0f) / ((real32)soundOutput->wavePeriod);
+; 218  : 
+; 219  : 			soundOutput->tSine += (2.0f * pi32 * 1.0f) / ((real32)soundOutput->wavePeriod);
 
   00185	8b 45 08	 mov	 eax, DWORD PTR _soundOutput$[ebp]
   00188	f3 0f 2a 40 10	 cvtsi2ss xmm0, DWORD PTR [eax+16]
@@ -1902,7 +2283,7 @@ $LN7@Win32FillS:
   001a1	8b 55 08	 mov	 edx, DWORD PTR _soundOutput$[ebp]
   001a4	f3 0f 11 4a 1c	 movss	 DWORD PTR [edx+28], xmm1
 
-; 219  : 			++soundOutput->runningSampleIndex;
+; 220  : 			++soundOutput->runningSampleIndex;
 
   001a9	8b 45 08	 mov	 eax, DWORD PTR _soundOutput$[ebp]
   001ac	8b 48 0c	 mov	 ecx, DWORD PTR [eax+12]
@@ -1910,13 +2291,13 @@ $LN7@Win32FillS:
   001b2	8b 55 08	 mov	 edx, DWORD PTR _soundOutput$[ebp]
   001b5	89 4a 0c	 mov	 DWORD PTR [edx+12], ecx
 
-; 220  : 		}
+; 221  : 		}
 
   001b8	e9 5c ff ff ff	 jmp	 $LN5@Win32FillS
 $LN6@Win32FillS:
 
-; 221  : 
-; 222  : 		g_secondary_buffer->Unlock(
+; 222  : 
+; 223  : 		g_secondary_buffer->Unlock(
 
   001bd	8b 45 e8	 mov	 eax, DWORD PTR _Region2Size$[ebp]
   001c0	50		 push	 eax
@@ -1935,10 +2316,10 @@ $LN6@Win32FillS:
   001de	ff d1		 call	 ecx
 $LN8@Win32FillS:
 
-; 223  : 			Region1, Region1Size,
-; 224  : 			Region2, Region2Size);
-; 225  : 	}
-; 226  : }
+; 224  : 			Region1, Region1Size,
+; 225  : 			Region2, Region2Size);
+; 226  : 	}
+; 227  : }
 
   001e0	8b e5		 mov	 esp, ebp
   001e2	5d		 pop	 ebp
@@ -1961,7 +2342,7 @@ _samplesPerSecond$ = 12					; size = 4
 _bufferSize$ = 16					; size = 4
 ?Win32InitDSound@@YAXPAUHWND__@@HH@Z PROC		; Win32InitDSound
 
-; 111  : {
+; 112  : {
 
   00000	55		 push	 ebp
   00001	8b ec		 mov	 ebp, esp
@@ -1970,32 +2351,32 @@ _bufferSize$ = 16					; size = 4
   0000b	33 c5		 xor	 eax, ebp
   0000d	89 45 fc	 mov	 DWORD PTR __$ArrayPad$[ebp], eax
 
-; 112  : 	HMODULE library = LoadLibraryA("dsound.dll");
+; 113  : 	HMODULE library = LoadLibraryA("dsound.dll");
 
-  00010	68 00 00 00 00	 push	 OFFSET $SG95375
+  00010	68 00 00 00 00	 push	 OFFSET $SG98159
   00015	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__LoadLibraryA@4
   0001b	89 45 98	 mov	 DWORD PTR _library$[ebp], eax
 
-; 113  : 	if (library)
+; 114  : 	if (library)
 
   0001e	83 7d 98 00	 cmp	 DWORD PTR _library$[ebp], 0
   00022	0f 84 58 01 00
 	00		 je	 $LN1@Win32InitD
 
-; 114  : 	{
-; 115  : 		direct_sound_create* DirectSoundCreate = (direct_sound_create*)GetProcAddress(library, "DirectSoundCreate");
+; 115  : 	{
+; 116  : 		direct_sound_create* DirectSoundCreate = (direct_sound_create*)GetProcAddress(library, "DirectSoundCreate");
 
-  00028	68 00 00 00 00	 push	 OFFSET $SG95378
+  00028	68 00 00 00 00	 push	 OFFSET $SG98162
   0002d	8b 45 98	 mov	 eax, DWORD PTR _library$[ebp]
   00030	50		 push	 eax
   00031	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__GetProcAddress@8
   00037	89 45 94	 mov	 DWORD PTR _DirectSoundCreate$2[ebp], eax
 
-; 116  : 
-; 117  : 		LPDIRECTSOUND directSound;
-; 118  : 		if (DirectSoundCreate && SUCCEEDED(DirectSoundCreate(0, &directSound, 0)))
+; 117  : 
+; 118  : 		LPDIRECTSOUND directSound;
+; 119  : 		if (DirectSoundCreate && SUCCEEDED(DirectSoundCreate(0, &directSound, 0)))
 
   0003a	83 7d 94 00	 cmp	 DWORD PTR _DirectSoundCreate$2[ebp], 0
   0003e	0f 84 3c 01 00
@@ -2009,29 +2390,29 @@ _bufferSize$ = 16					; size = 4
   00051	0f 8c 29 01 00
 	00		 jl	 $LN1@Win32InitD
 
-; 119  : 		{
-; 120  : 			WAVEFORMATEX waveFormat;
-; 121  : 			waveFormat.wFormatTag = WAVE_FORMAT_PCM;
+; 120  : 		{
+; 121  : 			WAVEFORMATEX waveFormat;
+; 122  : 			waveFormat.wFormatTag = WAVE_FORMAT_PCM;
 
   00057	ba 01 00 00 00	 mov	 edx, 1
   0005c	66 89 55 e8	 mov	 WORD PTR _waveFormat$6[ebp], dx
 
-; 122  : 			waveFormat.nChannels = 2;
+; 123  : 			waveFormat.nChannels = 2;
 
   00060	b8 02 00 00 00	 mov	 eax, 2
   00065	66 89 45 ea	 mov	 WORD PTR _waveFormat$6[ebp+2], ax
 
-; 123  : 			waveFormat.nSamplesPerSec = samplesPerSecond;
+; 124  : 			waveFormat.nSamplesPerSec = samplesPerSecond;
 
   00069	8b 4d 0c	 mov	 ecx, DWORD PTR _samplesPerSecond$[ebp]
   0006c	89 4d ec	 mov	 DWORD PTR _waveFormat$6[ebp+4], ecx
 
-; 124  : 			waveFormat.wBitsPerSample = 16;
+; 125  : 			waveFormat.wBitsPerSample = 16;
 
   0006f	ba 10 00 00 00	 mov	 edx, 16			; 00000010H
   00074	66 89 55 f6	 mov	 WORD PTR _waveFormat$6[ebp+14], dx
 
-; 125  : 			waveFormat.nBlockAlign = (waveFormat.nChannels * waveFormat.wBitsPerSample) / 8;
+; 126  : 			waveFormat.nBlockAlign = (waveFormat.nChannels * waveFormat.wBitsPerSample) / 8;
 
   00078	0f b7 45 ea	 movzx	 eax, WORD PTR _waveFormat$6[ebp+2]
   0007c	0f b7 4d f6	 movzx	 ecx, WORD PTR _waveFormat$6[ebp+14]
@@ -2042,19 +2423,19 @@ _bufferSize$ = 16					; size = 4
   00089	c1 f8 03	 sar	 eax, 3
   0008c	66 89 45 f4	 mov	 WORD PTR _waveFormat$6[ebp+12], ax
 
-; 126  : 			waveFormat.nAvgBytesPerSec = waveFormat.nSamplesPerSec * waveFormat.nBlockAlign;
+; 127  : 			waveFormat.nAvgBytesPerSec = waveFormat.nSamplesPerSec * waveFormat.nBlockAlign;
 
   00090	0f b7 55 f4	 movzx	 edx, WORD PTR _waveFormat$6[ebp+12]
   00094	0f af 55 ec	 imul	 edx, DWORD PTR _waveFormat$6[ebp+4]
   00098	89 55 f0	 mov	 DWORD PTR _waveFormat$6[ebp+8], edx
 
-; 127  : 			waveFormat.cbSize = 0;
+; 128  : 			waveFormat.cbSize = 0;
 
   0009b	33 c0		 xor	 eax, eax
   0009d	66 89 45 f8	 mov	 WORD PTR _waveFormat$6[ebp+16], ax
 
-; 128  : 
-; 129  : 			if (SUCCEEDED(directSound->SetCooperativeLevel(Window, DSSCL_PRIORITY)))
+; 129  : 
+; 130  : 			if (SUCCEEDED(directSound->SetCooperativeLevel(Window, DSSCL_PRIORITY)))
 
   000a1	6a 02		 push	 2
   000a3	8b 4d 08	 mov	 ecx, DWORD PTR _Window$[ebp]
@@ -2068,8 +2449,8 @@ _bufferSize$ = 16					; size = 4
   000b5	85 c0		 test	 eax, eax
   000b7	7c 68		 jl	 SHORT $LN7@Win32InitD
 
-; 130  : 			{
-; 131  : 				DSBUFFERDESC bufferDescription = {};
+; 131  : 			{
+; 132  : 				DSBUFFERDESC bufferDescription = {};
 
   000b9	33 c0		 xor	 eax, eax
   000bb	89 45 c4	 mov	 DWORD PTR _bufferDescription$5[ebp], eax
@@ -2082,18 +2463,18 @@ _bufferSize$ = 16					; size = 4
   000d0	89 45 e0	 mov	 DWORD PTR _bufferDescription$5[ebp+28], eax
   000d3	89 45 e4	 mov	 DWORD PTR _bufferDescription$5[ebp+32], eax
 
-; 132  : 				bufferDescription.dwSize = sizeof(bufferDescription);
+; 133  : 				bufferDescription.dwSize = sizeof(bufferDescription);
 
   000d6	c7 45 c4 24 00
 	00 00		 mov	 DWORD PTR _bufferDescription$5[ebp], 36 ; 00000024H
 
-; 133  : 				bufferDescription.dwFlags = DSBCAPS_PRIMARYBUFFER;
+; 134  : 				bufferDescription.dwFlags = DSBCAPS_PRIMARYBUFFER;
 
   000dd	c7 45 c8 01 00
 	00 00		 mov	 DWORD PTR _bufferDescription$5[ebp+4], 1
 
-; 134  : 				LPDIRECTSOUNDBUFFER primaryBuffer;
-; 135  : 				if (SUCCEEDED(directSound->CreateSoundBuffer(&bufferDescription, &primaryBuffer, 0)))
+; 135  : 				LPDIRECTSOUNDBUFFER primaryBuffer;
+; 136  : 				if (SUCCEEDED(directSound->CreateSoundBuffer(&bufferDescription, &primaryBuffer, 0)))
 
   000e4	6a 00		 push	 0
   000e6	8d 4d 90	 lea	 ecx, DWORD PTR _primaryBuffer$1[ebp]
@@ -2109,8 +2490,8 @@ _bufferSize$ = 16					; size = 4
   000fc	85 c0		 test	 eax, eax
   000fe	7c 21		 jl	 SHORT $LN7@Win32InitD
 
-; 136  : 				{
-; 137  : 					if (SUCCEEDED(primaryBuffer->SetFormat(&waveFormat)))
+; 137  : 				{
+; 138  : 					if (SUCCEEDED(primaryBuffer->SetFormat(&waveFormat)))
 
   00100	8d 4d e8	 lea	 ecx, DWORD PTR _waveFormat$6[ebp]
   00103	51		 push	 ecx
@@ -2123,31 +2504,31 @@ _bufferSize$ = 16					; size = 4
   00112	85 c0		 test	 eax, eax
   00114	7c 0b		 jl	 SHORT $LN7@Win32InitD
 
-; 138  : 					{
-; 139  : 						OutputDebugStringA("Primary buffer format was set.\n");
+; 139  : 					{
+; 140  : 						OutputDebugStringA("Primary buffer format was set.\n");
 
-  00116	68 00 00 00 00	 push	 OFFSET $SG95387
+  00116	68 00 00 00 00	 push	 OFFSET $SG98171
   0011b	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__OutputDebugStringA@4
 $LN7@Win32InitD:
 
-; 140  : 					}
-; 141  : 					else
-; 142  : 					{
-; 143  : 						// log diagnostic
-; 144  : 					}
-; 145  : 				}
-; 146  : 				else
-; 147  : 				{
-; 148  : 					// log diagnostic
-; 149  : 				}
-; 150  : 			}
-; 151  : 			else
-; 152  : 			{
-; 153  : 				// log diagnostic
-; 154  : 			}
-; 155  : 
-; 156  : 			DSBUFFERDESC bufferDescription = {};
+; 141  : 					}
+; 142  : 					else
+; 143  : 					{
+; 144  : 						// log diagnostic
+; 145  : 					}
+; 146  : 				}
+; 147  : 				else
+; 148  : 				{
+; 149  : 					// log diagnostic
+; 150  : 				}
+; 151  : 			}
+; 152  : 			else
+; 153  : 			{
+; 154  : 				// log diagnostic
+; 155  : 			}
+; 156  : 
+; 157  : 			DSBUFFERDESC bufferDescription = {};
 
   00121	33 c0		 xor	 eax, eax
   00123	89 45 a0	 mov	 DWORD PTR _bufferDescription$4[ebp], eax
@@ -2160,27 +2541,27 @@ $LN7@Win32InitD:
   00138	89 45 bc	 mov	 DWORD PTR _bufferDescription$4[ebp+28], eax
   0013b	89 45 c0	 mov	 DWORD PTR _bufferDescription$4[ebp+32], eax
 
-; 157  : 			bufferDescription.dwSize = sizeof(bufferDescription);
+; 158  : 			bufferDescription.dwSize = sizeof(bufferDescription);
 
   0013e	c7 45 a0 24 00
 	00 00		 mov	 DWORD PTR _bufferDescription$4[ebp], 36 ; 00000024H
 
-; 158  : 			bufferDescription.dwFlags = 0;
+; 159  : 			bufferDescription.dwFlags = 0;
 
   00145	c7 45 a4 00 00
 	00 00		 mov	 DWORD PTR _bufferDescription$4[ebp+4], 0
 
-; 159  : 			bufferDescription.dwBufferBytes = bufferSize;
+; 160  : 			bufferDescription.dwBufferBytes = bufferSize;
 
   0014c	8b 4d 10	 mov	 ecx, DWORD PTR _bufferSize$[ebp]
   0014f	89 4d a8	 mov	 DWORD PTR _bufferDescription$4[ebp+8], ecx
 
-; 160  : 			bufferDescription.lpwfxFormat = &waveFormat;
+; 161  : 			bufferDescription.lpwfxFormat = &waveFormat;
 
   00152	8d 55 e8	 lea	 edx, DWORD PTR _waveFormat$6[ebp]
   00155	89 55 b0	 mov	 DWORD PTR _bufferDescription$4[ebp+16], edx
 
-; 161  : 			if (SUCCEEDED(directSound->CreateSoundBuffer(&bufferDescription, &g_secondary_buffer, 0)))
+; 162  : 			if (SUCCEEDED(directSound->CreateSoundBuffer(&bufferDescription, &g_secondary_buffer, 0)))
 
   00158	6a 00		 push	 0
   0015a	68 00 00 00 00	 push	 OFFSET ?g_secondary_buffer@@3PAUIDirectSoundBuffer@@A
@@ -2195,31 +2576,31 @@ $LN7@Win32InitD:
   00171	85 c0		 test	 eax, eax
   00173	7c 0b		 jl	 SHORT $LN1@Win32InitD
 
-; 162  : 			{
-; 163  : 				OutputDebugStringA("Primary buffer format was set.\n");
+; 163  : 			{
+; 164  : 				OutputDebugStringA("Primary buffer format was set.\n");
 
-  00175	68 00 00 00 00	 push	 OFFSET $SG95390
+  00175	68 00 00 00 00	 push	 OFFSET $SG98174
   0017a	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__OutputDebugStringA@4
 $LN1@Win32InitD:
 
-; 164  : 			}
-; 165  : 			else
-; 166  : 			{
-; 167  : 				// log diagnostic
-; 168  : 			}
-; 169  : 		}
-; 170  : 		else
-; 171  : 		{
-; 172  : 			// log diagnostic
-; 173  : 		}
-; 174  : 	}
-; 175  : 	else
-; 176  : 	{
-; 177  : 		// log diagnostic
-; 178  : 	}
-; 179  : 
-; 180  : }
+; 165  : 			}
+; 166  : 			else
+; 167  : 			{
+; 168  : 				// log diagnostic
+; 169  : 			}
+; 170  : 		}
+; 171  : 		else
+; 172  : 		{
+; 173  : 			// log diagnostic
+; 174  : 		}
+; 175  : 	}
+; 176  : 	else
+; 177  : 	{
+; 178  : 		// log diagnostic
+; 179  : 	}
+; 180  : 
+; 181  : }
 
   00180	8b 4d fc	 mov	 ecx, DWORD PTR __$ArrayPad$[ebp]
   00183	33 cd		 xor	 ecx, ebp
@@ -2235,79 +2616,79 @@ _TEXT	SEGMENT
 _library$ = -4						; size = 4
 ?Win32LoadXInput@@YAXXZ PROC				; Win32LoadXInput
 
-; 87   : {
+; 88   : {
 
   00000	55		 push	 ebp
   00001	8b ec		 mov	 ebp, esp
   00003	51		 push	 ecx
 
-; 88   : 	HMODULE library = LoadLibraryA("xinput1_4.dll");
+; 89   : 	HMODULE library = LoadLibraryA("xinput1_4.dll");
 
-  00004	68 00 00 00 00	 push	 OFFSET $SG95349
+  00004	68 00 00 00 00	 push	 OFFSET $SG98133
   00009	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__LoadLibraryA@4
   0000f	89 45 fc	 mov	 DWORD PTR _library$[ebp], eax
 
-; 89   : 	if (library)
+; 90   : 	if (library)
 
   00012	83 7d fc 00	 cmp	 DWORD PTR _library$[ebp], 0
   00016	74 4e		 je	 SHORT $LN1@Win32LoadX
 
-; 90   : 	{
-; 91   : 		XInputGetState = (x_input_get_state*)GetProcAddress(library, "XInputGetState");
+; 91   : 	{
+; 92   : 		XInputGetState = (x_input_get_state*)GetProcAddress(library, "XInputGetState");
 
-  00018	68 00 00 00 00	 push	 OFFSET $SG95352
+  00018	68 00 00 00 00	 push	 OFFSET $SG98136
   0001d	8b 45 fc	 mov	 eax, DWORD PTR _library$[ebp]
   00020	50		 push	 eax
   00021	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__GetProcAddress@8
   00027	a3 00 00 00 00	 mov	 DWORD PTR ?xInputGetState_@@3P6GKKPAU_XINPUT_STATE@@@ZA, eax
 
-; 92   : 		if (!XInputGetState) {
+; 93   : 		if (!XInputGetState) {
 
   0002c	83 3d 00 00 00
 	00 00		 cmp	 DWORD PTR ?xInputGetState_@@3P6GKKPAU_XINPUT_STATE@@@ZA, 0
   00033	75 0a		 jne	 SHORT $LN4@Win32LoadX
 
-; 93   : 			XInputGetState = XInputGetStateStub;
+; 94   : 			XInputGetState = XInputGetStateStub;
 
   00035	c7 05 00 00 00
 	00 00 00 00 00	 mov	 DWORD PTR ?xInputGetState_@@3P6GKKPAU_XINPUT_STATE@@@ZA, OFFSET ?XInputGetStateStub@@YGKKPAU_XINPUT_STATE@@@Z ; XInputGetStateStub
 $LN4@Win32LoadX:
 
-; 94   : 		}
-; 95   : 		xInputSetState_ = (x_input_set_state*)GetProcAddress(library, "XInputSetState");
+; 95   : 		}
+; 96   : 		xInputSetState_ = (x_input_set_state*)GetProcAddress(library, "XInputSetState");
 
-  0003f	68 00 00 00 00	 push	 OFFSET $SG95354
+  0003f	68 00 00 00 00	 push	 OFFSET $SG98138
   00044	8b 4d fc	 mov	 ecx, DWORD PTR _library$[ebp]
   00047	51		 push	 ecx
   00048	ff 15 00 00 00
 	00		 call	 DWORD PTR __imp__GetProcAddress@8
   0004e	a3 00 00 00 00	 mov	 DWORD PTR ?xInputSetState_@@3P6GKKPAU_XINPUT_VIBRATION@@@ZA, eax
 
-; 96   : 		if (!XInputSetState) {
+; 97   : 		if (!XInputSetState) {
 
   00053	83 3d 00 00 00
 	00 00		 cmp	 DWORD PTR ?xInputSetState_@@3P6GKKPAU_XINPUT_VIBRATION@@@ZA, 0
   0005a	75 0a		 jne	 SHORT $LN1@Win32LoadX
 
-; 97   : 			XInputSetState = XInputSetStateStub;
+; 98   : 			XInputSetState = XInputSetStateStub;
 
   0005c	c7 05 00 00 00
 	00 00 00 00 00	 mov	 DWORD PTR ?xInputSetState_@@3P6GKKPAU_XINPUT_VIBRATION@@@ZA, OFFSET ?XInputSetStateStub@@YGKKPAU_XINPUT_VIBRATION@@@Z ; XInputSetStateStub
 $LN1@Win32LoadX:
 
-; 98   : 		}
-; 99   : 		else
-; 100  : 		{
-; 101  : 			// log diagnostic
-; 102  : 		}
-; 103  : 	}
-; 104  : 	else
-; 105  : 	{
-; 106  : 		// log diagnostic
-; 107  : 	}
-; 108  : }
+; 99   : 		}
+; 100  : 		else
+; 101  : 		{
+; 102  : 			// log diagnostic
+; 103  : 		}
+; 104  : 	}
+; 105  : 	else
+; 106  : 	{
+; 107  : 		// log diagnostic
+; 108  : 	}
+; 109  : }
 
   00066	8b e5		 mov	 esp, ebp
   00068	5d		 pop	 ebp
@@ -2321,7 +2702,7 @@ _dwUserIndex$ = 8					; size = 4
 _pVibration$ = 12					; size = 4
 ?XInputSetStateStub@@YGKKPAU_XINPUT_VIBRATION@@@Z PROC	; XInputSetStateStub
 
-; 65   : XINPUT_SET_STATE(XInputSetStateStub) { return(ERROR_DEVICE_NOT_CONNECTED); }
+; 66   : XINPUT_SET_STATE(XInputSetStateStub) { return(ERROR_DEVICE_NOT_CONNECTED); }
 
   00000	55		 push	 ebp
   00001	8b ec		 mov	 ebp, esp
@@ -2337,7 +2718,7 @@ _dwUserIndex$ = 8					; size = 4
 _pState$ = 12						; size = 4
 ?XInputGetStateStub@@YGKKPAU_XINPUT_STATE@@@Z PROC	; XInputGetStateStub
 
-; 64   : XINPUT_GET_STATE(XInputGetStateStub) { return(ERROR_DEVICE_NOT_CONNECTED); }
+; 65   : XINPUT_GET_STATE(XInputGetStateStub) { return(ERROR_DEVICE_NOT_CONNECTED); }
 
   00000	55		 push	 ebp
   00001	8b ec		 mov	 ebp, esp
@@ -2378,6 +2759,126 @@ _sinf	PROC						; COMDAT
 _sinf	ENDP
 _TEXT	ENDS
 ; Function compile flags: /Odtp
+; File C:\Program Files (x86)\Windows Kits\10\include\10.0.22621.0\ucrt\stdio.h
+;	COMDAT _vsprintf_s
+_TEXT	SEGMENT
+__Buffer$ = 8						; size = 4
+__BufferCount$ = 12					; size = 4
+__Format$ = 16						; size = 4
+__ArgList$ = 20						; size = 4
+_vsprintf_s PROC					; COMDAT
+
+; 1512 :         {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+
+; 1513 :             return _vsprintf_s_l(_Buffer, _BufferCount, _Format, NULL, _ArgList);
+
+  00003	8b 45 14	 mov	 eax, DWORD PTR __ArgList$[ebp]
+  00006	50		 push	 eax
+  00007	6a 00		 push	 0
+  00009	8b 4d 10	 mov	 ecx, DWORD PTR __Format$[ebp]
+  0000c	51		 push	 ecx
+  0000d	8b 55 0c	 mov	 edx, DWORD PTR __BufferCount$[ebp]
+  00010	52		 push	 edx
+  00011	8b 45 08	 mov	 eax, DWORD PTR __Buffer$[ebp]
+  00014	50		 push	 eax
+  00015	e8 00 00 00 00	 call	 __vsprintf_s_l
+  0001a	83 c4 14	 add	 esp, 20			; 00000014H
+
+; 1514 :         }
+
+  0001d	5d		 pop	 ebp
+  0001e	c3		 ret	 0
+_vsprintf_s ENDP
+_TEXT	ENDS
+; Function compile flags: /Odtp
+; File C:\Program Files (x86)\Windows Kits\10\include\10.0.22621.0\ucrt\stdio.h
+;	COMDAT __vsprintf_s_l
+_TEXT	SEGMENT
+tv73 = -8						; size = 4
+__Result$ = -4						; size = 4
+__Buffer$ = 8						; size = 4
+__BufferCount$ = 12					; size = 4
+__Format$ = 16						; size = 4
+__Locale$ = 20						; size = 4
+__ArgList$ = 24						; size = 4
+__vsprintf_s_l PROC					; COMDAT
+
+; 1490 :     {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+  00003	83 ec 08	 sub	 esp, 8
+
+; 1491 :         int const _Result = __stdio_common_vsprintf_s(
+
+  00006	8b 45 18	 mov	 eax, DWORD PTR __ArgList$[ebp]
+  00009	50		 push	 eax
+  0000a	8b 4d 14	 mov	 ecx, DWORD PTR __Locale$[ebp]
+  0000d	51		 push	 ecx
+  0000e	8b 55 10	 mov	 edx, DWORD PTR __Format$[ebp]
+  00011	52		 push	 edx
+  00012	8b 45 0c	 mov	 eax, DWORD PTR __BufferCount$[ebp]
+  00015	50		 push	 eax
+  00016	8b 4d 08	 mov	 ecx, DWORD PTR __Buffer$[ebp]
+  00019	51		 push	 ecx
+  0001a	e8 00 00 00 00	 call	 ___local_stdio_printf_options
+  0001f	8b 50 04	 mov	 edx, DWORD PTR [eax+4]
+  00022	52		 push	 edx
+  00023	8b 00		 mov	 eax, DWORD PTR [eax]
+  00025	50		 push	 eax
+  00026	e8 00 00 00 00	 call	 ___stdio_common_vsprintf_s
+  0002b	83 c4 1c	 add	 esp, 28			; 0000001cH
+  0002e	89 45 fc	 mov	 DWORD PTR __Result$[ebp], eax
+
+; 1492 :             _CRT_INTERNAL_LOCAL_PRINTF_OPTIONS,
+; 1493 :             _Buffer, _BufferCount, _Format, _Locale, _ArgList);
+; 1494 : 
+; 1495 :         return _Result < 0 ? -1 : _Result;
+
+  00031	83 7d fc 00	 cmp	 DWORD PTR __Result$[ebp], 0
+  00035	7d 09		 jge	 SHORT $LN3@vsprintf_s
+  00037	c7 45 f8 ff ff
+	ff ff		 mov	 DWORD PTR tv73[ebp], -1
+  0003e	eb 06		 jmp	 SHORT $LN4@vsprintf_s
+$LN3@vsprintf_s:
+  00040	8b 4d fc	 mov	 ecx, DWORD PTR __Result$[ebp]
+  00043	89 4d f8	 mov	 DWORD PTR tv73[ebp], ecx
+$LN4@vsprintf_s:
+  00046	8b 45 f8	 mov	 eax, DWORD PTR tv73[ebp]
+
+; 1496 :     }
+
+  00049	8b e5		 mov	 esp, ebp
+  0004b	5d		 pop	 ebp
+  0004c	c3		 ret	 0
+__vsprintf_s_l ENDP
+_TEXT	ENDS
+; Function compile flags: /Odtp
+; File C:\Program Files (x86)\Windows Kits\10\include\10.0.22621.0\ucrt\corecrt_stdio_config.h
+;	COMDAT ___local_stdio_printf_options
+_TEXT	SEGMENT
+___local_stdio_printf_options PROC			; COMDAT
+
+; 90   :     {
+
+  00000	55		 push	 ebp
+  00001	8b ec		 mov	 ebp, esp
+
+; 91   :         static unsigned __int64 _OptionsStorage;
+; 92   :         return &_OptionsStorage;
+
+  00003	b8 00 00 00 00	 mov	 eax, OFFSET ?_OptionsStorage@?1??__local_stdio_printf_options@@9@4_KA ; `__local_stdio_printf_options'::`2'::_OptionsStorage
+
+; 93   :     }
+
+  00008	5d		 pop	 ebp
+  00009	c3		 ret	 0
+___local_stdio_printf_options ENDP
+_TEXT	ENDS
+; Function compile flags: /Odtp
 ; File w:\WindowsGame\BareBones\code\win32_barebones.cpp
 _TEXT	SEGMENT
 _Instance$ = 8						; size = 4
@@ -2386,24 +2887,24 @@ _CmdLine$ = 16						; size = 4
 _ShowCode$ = 20						; size = 4
 _WinMain@16 PROC
 
-; 587  : {
+; 613  : {
 
   00000	55		 push	 ebp
   00001	8b ec		 mov	 ebp, esp
 
-; 588  : 	main(Instance);
+; 614  : 	main(Instance);
 
   00003	8b 45 08	 mov	 eax, DWORD PTR _Instance$[ebp]
   00006	50		 push	 eax
   00007	e8 00 00 00 00	 call	 _main
   0000c	83 c4 04	 add	 esp, 4
 
-; 589  : 
-; 590  : 	return(0);
+; 615  : 
+; 616  : 	return(0);
 
   0000f	33 c0		 xor	 eax, eax
 
-; 591  : }
+; 617  : }
 
   00011	5d		 pop	 ebp
   00012	c2 10 00	 ret	 16			; 00000010H

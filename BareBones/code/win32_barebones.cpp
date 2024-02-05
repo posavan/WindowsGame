@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <xinput.h>
 #include <dsound.h>
 #include <math.h>
@@ -417,6 +418,10 @@ internal_function LRESULT CALLBACK Win32MainWindowCallback(
 }
 
 int main(HINSTANCE Instance) {
+	LARGE_INTEGER perfCountFreqResult;
+	QueryPerformanceFrequency(&perfCountFreqResult);
+	int64 perfCountFrequency = perfCountFreqResult.QuadPart;
+	
 	Win32LoadXInput();
 
 	WNDCLASSA WindowClass = {};
@@ -456,7 +461,7 @@ int main(HINSTANCE Instance) {
 
 			soundOutput.samplesPerSec = 48000;
 			soundOutput.toneHz = 256;
-			soundOutput.toneVolume = 3000;
+			soundOutput.toneVolume = 300;
 			soundOutput.runningSampleIndex = 0;
 			soundOutput.wavePeriod = soundOutput.samplesPerSec / soundOutput.toneHz;
 			soundOutput.bytesPerSample = sizeof(int16) * 2;
@@ -466,6 +471,10 @@ int main(HINSTANCE Instance) {
 			Win32InitDSound(Window, soundOutput.samplesPerSec, soundOutput.bufferSize);
 			Win32FillSoundBuffer(&soundOutput, 0, soundOutput.latencySample * soundOutput.bytesPerSample);
 			g_secondary_buffer->Play(0, 0, DSBPLAY_LOOPING);
+
+			LARGE_INTEGER lastCounter;
+			QueryPerformanceCounter(&lastCounter);
+			uint64 lastCycleCount = __rdtsc();
 
 			g_running = true;
 			while (g_running)
@@ -565,6 +574,23 @@ int main(HINSTANCE Instance) {
 					DeviceContext,
 					dimensions.width, dimensions.height);
 
+				uint64 endCycleCount = __rdtsc();
+				LARGE_INTEGER endCounter;
+				QueryPerformanceCounter(&endCounter);
+
+				// for debugging purposes
+				int64 cyclesElapsed = endCycleCount - lastCycleCount;
+				int64 counterElapsed = endCounter.QuadPart - lastCounter.QuadPart;
+				real32 mSPerFrame = (((1000.0f*(real32)counterElapsed) / (real32)perfCountFrequency));
+				real32 fps = (real32)perfCountFrequency / (real32)counterElapsed;
+				real32 MegaCyclePerFrame = ((real32)cyclesElapsed / 1000000.0f);		
+				char buffer[256];
+				sprintf_s(buffer, "%fmspf | %ffps | %fMcpf\n", mSPerFrame, fps, MegaCyclePerFrame);
+				OutputDebugStringA(buffer);
+				//end
+
+				lastCounter = endCounter;
+				lastCycleCount = endCycleCount;
 			}
 		}
 		else
