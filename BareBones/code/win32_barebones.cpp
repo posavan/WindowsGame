@@ -1,10 +1,5 @@
-#include <windows.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <xinput.h>
-#include <dsound.h>
 
-#include <math.h>
+#include <stdint.h>
 
 #pragma region Header
 #define internal_function static
@@ -29,12 +24,29 @@ typedef double real64;
 
 #include "barebones.cpp"
 
-struct window_dimensions
+#include <windows.h>
+#include <stdio.h>
+#include <xinput.h>
+#include <dsound.h>
+
+#include <math.h>
+
+struct win32_offscreen_buffer
+{
+	// pixels are always 32-bits wide, little endian 0x xx RR GG BB
+	// memory order: BB GG RR xx
+	BITMAPINFO info;
+	void* memory;
+	int width;
+	int height;
+	int pitch;
+};
+struct win32_window_dimensions
 {
 	int width;
 	int height;
 };
-struct sound_output
+struct win32_sound_output
 {
 	int samplesPerSec;
 	int toneHz;
@@ -73,7 +85,7 @@ typedef DIRECT_SOUND_CREATE(direct_sound_create);
 
 #pragma region Globals
 global_variable bool32 g_running;
-global_variable offscreen_buffer g_back_buffer;
+global_variable win32_offscreen_buffer g_back_buffer;
 global_variable LPDIRECTSOUNDBUFFER g_secondary_buffer;
 #pragma endregion
 
@@ -173,7 +185,7 @@ internal_function void Win32InitDSound(HWND Window, int32 samplesPerSecond, int3
 
 }
 
-internal_function void Win32FillSoundBuffer(sound_output* soundOutput, DWORD byteToLock, DWORD bytesToWrite)
+internal_function void Win32FillSoundBuffer(win32_sound_output* soundOutput, DWORD byteToLock, DWORD bytesToWrite)
 {
 	VOID* Region1;
 	DWORD Region1Size;
@@ -219,9 +231,9 @@ internal_function void Win32FillSoundBuffer(sound_output* soundOutput, DWORD byt
 	}
 }
 
-internal_function window_dimensions Win32GetWindowDimensions(HWND Window)
+internal_function win32_window_dimensions Win32GetWindowDimensions(HWND Window)
 {
-	window_dimensions result;
+	win32_window_dimensions result;
 
 	RECT ClientRect;
 	GetClientRect(Window, &ClientRect);
@@ -231,7 +243,7 @@ internal_function window_dimensions Win32GetWindowDimensions(HWND Window)
 	return(result);
 }
 
-internal_function void Win32ResizeDIBSection(offscreen_buffer* buffer, int width, int height)
+internal_function void Win32ResizeDIBSection(win32_offscreen_buffer* buffer, int width, int height)
 {
 	if (buffer->memory)
 	{
@@ -256,7 +268,7 @@ internal_function void Win32ResizeDIBSection(offscreen_buffer* buffer, int width
 }
 
 internal_function void Win32DisplayBufferToWindow(
-	offscreen_buffer* buffer,
+	win32_offscreen_buffer* buffer,
 	HDC DeviceContext,
 	int windowWidth, int windowHeight
 )
@@ -368,7 +380,7 @@ internal_function LRESULT CALLBACK Win32MainWindowCallback(
 	{
 		PAINTSTRUCT Paint;
 		HDC DeviceContext = BeginPaint(Window, &Paint);
-		window_dimensions dimensions = Win32GetWindowDimensions(Window);
+		win32_window_dimensions dimensions = Win32GetWindowDimensions(Window);
 
 		Win32DisplayBufferToWindow(
 			&g_back_buffer,
@@ -426,7 +438,7 @@ int main(HINSTANCE Instance) {
 			int yOffset = 0;
 
 			// Sound Test
-			sound_output soundOutput = {};
+			win32_sound_output soundOutput = {};
 
 			soundOutput.samplesPerSec = 48000;
 			soundOutput.toneHz = 256;
@@ -506,10 +518,10 @@ int main(HINSTANCE Instance) {
 				}
 
 				offscreen_buffer buffer = {};
-				buffer.memory = g_backbuffer.memory;
-				buffer.width = g_backbuffer.width;
-				buffer.height = g_backbuffer.height;
-				buffer.pitch = g_backbuffer.pitch;
+				buffer.memory = g_back_buffer.memory;
+				buffer.width = g_back_buffer.width;
+				buffer.height = g_back_buffer.height;
+				buffer.pitch = g_back_buffer.pitch;
 				GameUpdateAndRender(&buffer);
 				
 #pragma region DirectSoundTest
@@ -542,7 +554,7 @@ int main(HINSTANCE Instance) {
 				}
 #pragma endregion
 
-				window_dimensions dimensions = Win32GetWindowDimensions(Window);
+				win32_window_dimensions dimensions = Win32GetWindowDimensions(Window);
 				Win32DisplayBufferToWindow(
 					&g_back_buffer,
 					DeviceContext,

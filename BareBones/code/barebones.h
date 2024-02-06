@@ -1,3 +1,4 @@
+#if !defined(BAREBONES_H)
 // Services that the platform layer provides to the game
 
 
