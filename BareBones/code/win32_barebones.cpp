@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <xinput.h>
 #include <dsound.h>
+
 #include <math.h>
 
 #pragma region Header
@@ -26,16 +27,8 @@ typedef uint64_t uint64;
 typedef float real32;
 typedef double real64;
 
-struct offscreen_buffer
-{
-	// pixels are always 32-bits wide, little endian 0x xx RR GG BB
-	// memory order: BB GG RR xx
-	BITMAPINFO info;
-	void* memory;
-	int width;
-	int height;
-	int pitch;
-};
+#include "barebones.cpp"
+
 struct window_dimensions
 {
 	int width;
@@ -236,30 +229,6 @@ internal_function window_dimensions Win32GetWindowDimensions(HWND Window)
 	result.height = ClientRect.bottom - ClientRect.top;
 
 	return(result);
-}
-
-internal_function void Win32RenderColor(offscreen_buffer* buffer, int blueOffset, int greenOffset, int redOffset)
-{
-
-	uint8* row = (uint8*)buffer->memory;
-	for (int y = 0; y < buffer->height; ++y)
-	{
-		uint32* pixel = (uint32*)row;
-		for (int x = 0; x < buffer->width; ++x)
-		{
-			/*
-			* Memory:	BB GG RR xx
-			* Register:	xx RR GG BB
-			*/
-			uint8 blue = (x + blueOffset);
-			uint8 green = (y + greenOffset);
-			uint8 red = (0 + redOffset);
-
-			*pixel++ = (blue | (green << 8) | (red << 16));
-		}
-
-		row += buffer->pitch;
-	}
 }
 
 internal_function void Win32ResizeDIBSection(offscreen_buffer* buffer, int width, int height)
@@ -536,8 +505,13 @@ int main(HINSTANCE Instance) {
 					}
 				}
 
-				Win32RenderColor(&g_back_buffer, xOffset, yOffset, 0);
-
+				offscreen_buffer buffer = {};
+				buffer.memory = g_backbuffer.memory;
+				buffer.width = g_backbuffer.width;
+				buffer.height = g_backbuffer.height;
+				buffer.pitch = g_backbuffer.pitch;
+				GameUpdateAndRender(&buffer);
+				
 #pragma region DirectSoundTest
 				DWORD playCursor;
 				DWORD writeCursor;
@@ -579,14 +553,15 @@ int main(HINSTANCE Instance) {
 				QueryPerformanceCounter(&endCounter);
 
 				// for debugging purposes
-				int64 cyclesElapsed = endCycleCount - lastCycleCount;
+				uint64 cyclesElapsed = endCycleCount - lastCycleCount;
 				int64 counterElapsed = endCounter.QuadPart - lastCounter.QuadPart;
 				real32 mSPerFrame = (((1000.0f*(real32)counterElapsed) / (real32)perfCountFrequency));
 				real32 fps = (real32)perfCountFrequency / (real32)counterElapsed;
-				real32 MegaCyclePerFrame = ((real32)cyclesElapsed / 1000000.0f);		
-				char buffer[256];
-				sprintf_s(buffer, "%fmspf | %ffps | %fMcpf\n", mSPerFrame, fps, MegaCyclePerFrame);
-				OutputDebugStringA(buffer);
+				real32 MegaCyclePerFrame = ((real32)cyclesElapsed / 1000000.0f);
+
+				//char buffer[256];
+				//sprintf_s(buffer, "%.02fmspf | %.02ffps | %.02fMcpf\n", mSPerFrame, fps, MegaCyclePerFrame);
+				//OutputDebugStringA(buffer);
 				//end
 
 				lastCounter = endCounter;
@@ -605,7 +580,7 @@ int main(HINSTANCE Instance) {
 
 }
 
-int WINAPI WinMain(
+int WINAPI WinMainA(
 	HINSTANCE Instance,
 	HINSTANCE PrevInstance,
 	LPSTR CmdLine,
