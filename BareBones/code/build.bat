@@ -1,6 +1,6 @@
 @echo off
 ::subst w: "C:\Users\posav\source\repos"
-mkdir ..\..\build
+IF NOT EXIST ..\..\build mkdir ..\..\build
 pushd ..\..\build
-cl -FAsc -Zi w:/WindowsGame/BareBones/code/win32_barebones.cpp user32.lib gdi32.lib 
+cl -FC -Zi w:/WindowsGame/BareBones/code/win32_barebones.cpp user32.lib gdi32.lib 
 popd
