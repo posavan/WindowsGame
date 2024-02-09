@@ -44,13 +44,32 @@ internal_function void RenderColor(game_offscreen_buffer* buffer, int blueOffset
 }
 
 internal_function void GameUpdateAndRender(
-	game_offscreen_buffer* buffer, 
+	game_offscreen_buffer* buffer,
 	game_sound_output_buffer* soundBuffer,
-	int toneHz)
+	game_input* gameInput)
 {
-	int blueOffset = 0;
-	int greenOffset = 0;
-	int redOffset = 0;
+	local_persist int blueOffset = 0;
+	local_persist int greenOffset = 0;
+	local_persist int redOffset = 0;
+	local_persist int toneHz = 256;
+
+	game_controller_input* input0 = &gameInput->controllers[0];
+	if (input0->isAnalog)
+	{
+		// use analog movement
+		blueOffset += (int)(4.0f * (input0->endX));
+		toneHz = 256 + (int)(128.0f * (input0->endY));
+	}
+	else
+	{
+		// use digital movement
+	}
+
+	if (input0->down.endedDown)
+	{
+		++greenOffset;
+	}
+
 
 	GameOutputSound(soundBuffer, toneHz);
 	RenderColor(buffer, blueOffset, greenOffset, redOffset);
