@@ -43,22 +43,44 @@ internal_function void RenderColor(game_offscreen_buffer* buffer, int blueOffset
 	}
 }
 
+internal_function game_state* GameStartup(void)
+{
+	game_state* gameState = new game_state;
+	if (gameState)
+	{
+		gameState->blueOffset = 0;
+		gameState->greenOffset = 0;
+		gameState->redOffset = 0;
+		gameState->toneHz = 256;
+	}
+
+	return(gameState);
+}
+
+internal_function void DeleteGameState(game_state* gameState)
+{
+	//delete (gameState);
+}
+
 internal_function void GameUpdateAndRender(
+	game_memory* memory,
 	game_offscreen_buffer* buffer,
 	game_sound_output_buffer* soundBuffer,
 	game_input* gameInput)
 {
-	local_persist int blueOffset = 0;
-	local_persist int greenOffset = 0;
-	local_persist int redOffset = 0;
-	local_persist int toneHz = 256;
+	game_state* gameState = (game_state*)memory->permStorage;
+	if (!memory->isInitialized)
+	{
+		gameState->toneHz = 256;
 
+		memory->isInitialized = true;
+	}
 	game_controller_input* input0 = &gameInput->controllers[0];
 	if (input0->isAnalog)
 	{
 		// use analog movement
-		blueOffset += (int)(4.0f * (input0->endX));
-		toneHz = 256 + (int)(128.0f * (input0->endY));
+		gameState->blueOffset += (int)(4.0f * (input0->endX));
+		gameState->toneHz = 256 + (int)(128.0f * (input0->endY));
 	}
 	else
 	{
@@ -67,10 +89,9 @@ internal_function void GameUpdateAndRender(
 
 	if (input0->down.endedDown)
 	{
-		++greenOffset;
+		++gameState->greenOffset;
 	}
 
-
-	GameOutputSound(soundBuffer, toneHz);
-	RenderColor(buffer, blueOffset, greenOffset, redOffset);
+	GameOutputSound(soundBuffer, gameState->toneHz);
+	RenderColor(buffer, gameState->blueOffset, gameState->greenOffset, gameState->redOffset);
 }

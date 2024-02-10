@@ -1,5 +1,8 @@
 #if !defined(BAREBONES_H)
 
+#define Kilobytes(Value) ((Value)*1024)
+#define Megabytes(Value) (Kilobytes(Value)*1024)
+#define Gigabytes(Value) (Megabytes(Value)*1024)
 #define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
 // Services that the platform layer provides to the game
 
@@ -60,12 +63,28 @@ struct game_input
 {
 	game_controller_input controllers[4];
 };
+struct game_memory
+{
+	bool32 isInitialized;
+	uint64 permStorageSize;
+	void* permStorage;
+	uint64 tempStorageSize;
+	void* tempStorage;
+};
 
 // @params: timing, controller/keyboard input, bitmap buffer, sound buffer
 internal_function void GameUpdateAndRender(
+	game_memory* memory,
 	game_offscreen_buffer* buffer,
 	game_sound_output_buffer* soundBuffer,
 	game_input* gameInput);
 
+struct game_state
+{
+	int toneHz;
+	int blueOffset;
+	int greenOffset;
+	int redOffset;
+};
 #define BAREBONES_H
 #endif
