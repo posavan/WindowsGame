@@ -71,10 +71,22 @@ internal_function void GameUpdateAndRender(
 	game_state* gameState = (game_state*)memory->permStorage;
 	if (!memory->isInitialized)
 	{
+#if BAREBONES_INTERNAL
+		char* filename = __FILE__;
+
+		debug_read_file_result BitmapMemory = DEBUGPlatformReadEntireFile(filename);
+		if (BitmapMemory)
+		{
+			DEBUGPlatformWriteEntireFile("w:../data/test.out", File.ContentsSize, FIle.Contents);
+			DEBUGPlatformFreeFileMemory(File.Contents);
+		}
+#endif BAREBONES_INTERNAL
+
 		gameState->toneHz = 256;
 
 		memory->isInitialized = true;
 	}
+
 	game_controller_input* input0 = &gameInput->controllers[0];
 	if (input0->isAnalog)
 	{

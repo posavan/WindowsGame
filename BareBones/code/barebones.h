@@ -1,11 +1,39 @@
 #if !defined(BAREBONES_H)
 
-#define Kilobytes(Value) ((Value)*1024)
-#define Megabytes(Value) (Kilobytes(Value)*1024)
-#define Gigabytes(Value) (Megabytes(Value)*1024)
-#define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
-// Services that the platform layer provides to the game
+/*
+* BAREBONES_INTERNAL:
+*	0 - Build for public release
+*	1 - Build for development
+*
+* BAREBONES_SLOW:
+*	0 - No slow code allowed
+*	1 - Slow code welcome
+*/
+#if BAREBONES_SLOW
+#define Assert(Expression) if(!(Expression)) {*(int*)0 = 0;}//if false, breaks program
+#else
+#define Assert(Expression)
+#endif
 
+#define Kilobytes(Value) ((Value)*1024LL)
+#define Megabytes(Value) (Kilobytes(Value)*1024LL)
+#define Gigabytes(Value) (Megabytes(Value)*1024LL)
+#define Terabytes(Value) (Gigabytes(Value)*1024LL)
+#define ArrayCount(Array) (sizeof(Array) / sizeof((Array)[0]))
+
+// Services that the platform layer provides to the game
+#if BAREBONES_INTERNAL
+struct debug_read_file_result
+{
+	uint32 ContentsSize;
+	void* Contents;
+};
+
+internal_function debug_read_file_result DEBUGPlatformReadEntireFile(char* filename);
+internal_function void DEBUGPlatformFreeFileMemory(void* BitmapMemory);
+internal_function bool32 DEBUGPlatformWriteEntireFile(char* filename, 
+	uint32 memorySize, void* memory);
+#endif
 
 // Services that the game provides to the platform layer
 
@@ -61,6 +89,7 @@ struct game_controller_input
 };
 struct game_input
 {
+	real32 game_clock;
 	game_controller_input controllers[4];
 };
 struct game_memory
@@ -86,5 +115,6 @@ struct game_state
 	int greenOffset;
 	int redOffset;
 };
+
 #define BAREBONES_H
 #endif

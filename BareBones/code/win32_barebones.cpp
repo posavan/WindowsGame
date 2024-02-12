@@ -1,7 +1,7 @@
-
+#pragma region Header
+#include <math.h>
 #include <stdint.h>
 
-#pragma region Header
 #define internal_function static
 #define local_persist static
 #define global_variable static
@@ -22,6 +22,7 @@ typedef uint64_t uint64;
 typedef float real32;
 typedef double real64;
 
+#include "barebones.h"
 #include "barebones.cpp"
 
 #include <windows.h>
@@ -30,10 +31,13 @@ typedef double real64;
 #include <xinput.h>
 #include <dsound.h>
 
-#include <math.h>
-
 #include "win32_barebones.h"
+#pragma endregion
 
+#pragma region Globals
+global_variable bool32 g_running;
+global_variable win32_offscreen_buffer g_back_buffer;
+global_variable LPDIRECTSOUNDBUFFER g_secondary_buffer;
 #pragma endregion
 
 #pragma region Controller
@@ -59,11 +63,95 @@ typedef DIRECT_SOUND_CREATE(direct_sound_create);
 
 #pragma endregion
 
-#pragma region Globals
-global_variable bool32 g_running;
-global_variable win32_offscreen_buffer g_back_buffer;
-global_variable LPDIRECTSOUNDBUFFER g_secondary_buffer;
-#pragma endregion
+#if BAREBONES_INTERNAL
+internal_function void* DEBUGPlatformFreeFileMemory(void* Memory)
+{
+	if (Memory)
+	{
+		VirtualFree(Memory, 0, MEM_RELEASE);
+	}
+}
+
+internal_function debug_read_file_result DEBUGPlatformReadEntireFile(char* filename)
+{
+	debug_read_file_result Result = {};
+
+	HANDLE FileHandle = CreateFileA(
+		filename,
+		GENERIC_READ, FILE_SHARE_READ, 0,
+		OPEN_EXISTING, 0, 0);
+	if (FileHandle != INVALID_HANDLE_VALUE)
+	{
+		LARGE_INTEGER FileSize;
+		if (GetFileSizeEx(FileHandle, &FileSize))
+		{
+			Assert(FileSize.QuadPart <= 0xFFFFFFFF);
+			uint32 FileSize32 = (uint32)FileSize.QuadPart;
+			Result.Contents = VirtualAlloc(0, FileSize32,
+				MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+			if (Result)
+			{
+				DWORD BytesRead;
+				if (ReadFile(
+					FileHandle,
+					Result.Contents, FileSize.QuadPart,
+					&BytesRead, 0))
+				{
+					// File read success
+					Result.ContentsSize = FileSize32;
+				}
+				else
+				{
+					DEBUGPlatformFreeFileMemory(Result.Contents);
+					Result.Contents = 0;
+				}
+			}
+			else
+			{
+				// logging
+			}
+		}
+		else
+		{
+			// logging
+		}
+
+		CloseHandle(FileHandle);
+	}
+
+	return Result;
+}
+
+internal_function bool32 DEBUGPlatformWriteEntireFile(char* Filename, uint32 MemorySize, void* Memory)
+{
+	bool32 Result = false;
+
+	HANDLE FileHandle = CreateFileA(
+		Filename,
+		GENERIC_WRITE, 0, 0,
+		CREATE_ALWAYS, 0, 0);
+	if (FileHandle != INVALID_HANDLE_VALUE)
+	{
+		DWORD BytesWritten;
+		if (WriteFile(
+			FileHandle,
+			Memory, MemorySize,
+			&BytesWritten, 0))
+		{
+			Result = (BytesWritten == NemorySize);
+		}
+		else
+		{
+			DEBUGPlatformFreeFileMemory(Result);
+			Result = false;
+		}
+
+		CloseHandle(FileHandle);
+	}
+
+	return Result;
+}
+#endif BAREBONES_INTERNAL
 
 internal_function void Win32LoadXInput()
 {
@@ -457,13 +545,23 @@ int main(HINSTANCE Instance) {
 			g_secondary_buffer->Play(0, 0, DSBPLAY_LOOPING);
 			int16* samples = (int16*)VirtualAlloc(0, soundOutput.bufferSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 
+#if BAREBONES_INTERNAL
+			LPVOID BaseAddress = (LPVOID)Terabytes((uint64)2);
+#else
+			LPVOID BaseAddress = 0;
+#endif
+
 			game_memory gameMemory = {};
 			gameMemory.permStorageSize = Megabytes(64);
-			gameMemory.permStorage = VirtualAlloc(0, gameMemory.permStorageSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 			gameMemory.tempStorageSize = Gigabytes((uint64)4);
-			gameMemory.tempStorage = VirtualAlloc(0, gameMemory.tempStorageSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 
-			if (samples && gameMemory.permStorage)
+			uint64 totalSize = gameMemory.permStorageSize + gameMemory.tempStorageSize;
+			gameMemory.permStorage = VirtualAlloc(BaseAddress, totalSize,
+				MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+			gameMemory.tempStorage = ((uint8*)gameMemory.tempStorageSize +
+				gameMemory.permStorageSize);
+
+			if (samples && gameMemory.permStorage && gameMemory.tempStorage)
 			{
 				g_running = true;
 
