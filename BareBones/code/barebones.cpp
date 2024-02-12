@@ -77,7 +77,7 @@ internal_function void GameUpdateAndRender(
 		debug_read_file_result BitmapMemory = DEBUGPlatformReadEntireFile(filename);
 		if (BitmapMemory)
 		{
-			DEBUGPlatformWriteEntireFile("w:../data/test.out", File.ContentsSize, FIle.Contents);
+			DEBUGPlatformWriteEntireFile("test.out", File.ContentsSize, FIle.Contents);
 			DEBUGPlatformFreeFileMemory(File.Contents);
 		}
 #endif BAREBONES_INTERNAL
