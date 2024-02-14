@@ -341,7 +341,7 @@ internal_function real32 Win32ProcessXInputStickValue(SHORT thumbStick,
 	SHORT deadzone)
 {
 	real32 result = 0;
-	real32 max = 1;
+	real32 max = 0;
 	if (thumbStick < -deadzone)
 	{
 		max = 32768.0f;
@@ -648,8 +648,7 @@ int main(HINSTANCE Instance) {
 				{
 					game_controller_input* oldKeyboardController = &oldInput->controllers[0];
 					game_controller_input* newKeyboardController = &newInput->controllers[0];
-					game_controller_input zeroController = {};
-					*newKeyboardController = zeroController;
+					*newKeyboardController = {};
 					newKeyboardController->isConnected = true;
 					for (int buttonIndex = 0; buttonIndex < ArrayCount(newKeyboardController->buttons); ++buttonIndex)
 					{
