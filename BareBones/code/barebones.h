@@ -59,38 +59,38 @@ struct game_button_state
 };
 struct game_controller_input
 {
+	bool32 isConnected;
 	real32 isAnalog;
-
-	real32 startX;
-	real32 startY;
-
-	real32 minX;
-	real32 minY;
-
-	real32 maxX;
-	real32 maxY;
-
-	real32 endX;
-	real32 endY;
+	real32 stickAverageX;
+	real32 stickAverageY;
 
 	union
 	{
 		game_button_state buttons[6];
 		struct
 		{
-			game_button_state up;
-			game_button_state down;
-			game_button_state left;
-			game_button_state right;
+			game_button_state moveUp;
+			game_button_state moveDown;
+			game_button_state moveLeft;
+			game_button_state moveRight;
+
+			game_button_state actUp;
+			game_button_state actDown;
+			game_button_state actLeft;
+			game_button_state actRight;
+
 			game_button_state leftShoulder;
 			game_button_state rightShoulder;
+
+			game_button_state start;
+			game_button_state back;
 		};
 	};
 };
 struct game_input
 {
 	real32 game_clock;
-	game_controller_input controllers[4];
+	game_controller_input controllers[5];
 };
 struct game_memory
 {

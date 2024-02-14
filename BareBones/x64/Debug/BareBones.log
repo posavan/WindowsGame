@@ -1,4 +1,2 @@
 ﻿  win32_barebones.cpp
-C:\Users\posav\source\repos\WindowsGame\BareBones\code\win32_barebones.cpp(328,17): warning C4244: 'initializing': conversion from 'WPARAM' to 'uint32', possible loss of data
-C:\Users\posav\source\repos\WindowsGame\BareBones\code\win32_barebones.cpp(493,41): warning C4018: '<': signed/unsigned mismatch
   BareBones.vcxproj -> C:\Users\posav\source\repos\WindowsGame\BareBones\x64\Debug\BareBones.exe

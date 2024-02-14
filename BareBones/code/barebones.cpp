@@ -12,8 +12,8 @@ internal_function void GameOutputSound(game_sound_output_buffer* soundBuffer, in
 	{
 		real32 sineValue = sinf(tSine);
 		int16 sampleValue = (int16)(sineValue * toneVolume);
-		*sampleOut++ = sampleValue;
-		*sampleOut++ = sampleValue;
+		//*sampleOut++ = sampleValue;//breaks here
+		//*sampleOut++ = sampleValue;
 
 		tSine += (2.0f * pi32 * 1.0f) / (real32)wavePeriod;
 	}
@@ -87,21 +87,33 @@ internal_function void GameUpdateAndRender(
 		memory->isInitialized = true;
 	}
 
-	game_controller_input* input0 = &gameInput->controllers[0];
-	if (input0->isAnalog)
+	for (int controlIndex = 0; controlIndex < ArrayCount(gameInput->controllers); 
+		++controlIndex)
 	{
-		// use analog movement
-		gameState->blueOffset += (int)(4.0f * (input0->endX));
-		gameState->toneHz = 256 + (int)(128.0f * (input0->endY));
-	}
-	else
-	{
-		// use digital movement
-	}
+		game_controller_input* input = &gameInput->controllers[controlIndex];
+		if (input->isAnalog)
+		{
+			// use analog movement
+			gameState->blueOffset += (int)(4.0f * (input->stickAverageX));
+			gameState->toneHz = 256 + (int)(128.0f * (input->stickAverageY));
+		}
+		else
+		{
+			// use digital movement
+			if (&input->moveLeft.endedDown)
+			{
+				gameState->blueOffset -= 1;
+			}
+			if (&input->moveRight.endedDown)
+			{
+				gameState->blueOffset += 1;
+			}
+		}
 
-	if (input0->down.endedDown)
-	{
-		++gameState->greenOffset;
+		if (input->actDown.endedDown)
+		{
+			++gameState->greenOffset;
+		}
 	}
 
 	GameOutputSound(soundBuffer, gameState->toneHz);
