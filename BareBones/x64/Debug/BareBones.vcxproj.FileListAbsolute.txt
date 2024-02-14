@@ -1,2 +1,0 @@
-C:\Users\svetc\source\repos\WindowsGame\BareBones\x64\Debug\BareBones.exe
-C:\Users\posav\source\repos\WindowsGame\BareBones\x64\Debug\BareBones.exe
