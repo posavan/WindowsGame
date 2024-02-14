@@ -1,1 +1,1 @@
- A Windows game and engine built from the ground up with C/C++. Made with the help from Handmade Hero https://handmadehero.org/ project. Thank you to Casey Muratori for making a wonderful tutorial series on the topic.
+ A Windows game and engine built from the ground up with C/C++. Made with help from the Handmade Hero https://handmadehero.org/ project. Thank you to Casey Muratori for making a wonderful tutorial series on the topic.
