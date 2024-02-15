@@ -857,13 +857,16 @@ int main(HINSTANCE Instance) {
 					{
 						//missed frame rate
 					}
-					while (secondsElapsedPerFrame <= targetSecondsPerFrame)
+					if (sleepIsGranular)
 					{
-						if (sleepIsGranular)
+						DWORD sleepMS = (DWORD)(1000.0f * (targetSecondsPerFrame - secondsElapsedPerFrame));
+						if (sleepMS > 0)
 						{
-							DWORD sleepMS = (DWORD)(1000.0f * (targetSecondsPerFrame - secondsElapsedPerFrame));
 							Sleep(sleepMS);
 						}
+					}
+					while (secondsElapsedPerFrame <= targetSecondsPerFrame)
+					{
 						secondsElapsedPerFrame = Win32GetSecondsElapsed(
 							lastCounter, Win32GetWallClock());
 					}
@@ -873,21 +876,22 @@ int main(HINSTANCE Instance) {
 						&g_back_buffer,
 						DeviceContext,
 						dimensions.width, dimensions.height);
-#if 0
-					real32 mSPerFrame = (((1000.0f * (real32)counterElapsed) / (real32)perfCountFrequency));
-					real32 fps = (real32)perfCountFrequency / (real32)counterElapsed;
-					real32 MegaCyclePerFrame = ((real32)cyclesElapsed / 1000000.0f);
-#endif				
+
 					//Swap(oldInput, newInput);
 					game_input* temp = newInput;
 					newInput = oldInput;
 					oldInput = temp;
 
-					lastCounter = Win32GetWallClock();
+					LARGE_INTEGER endCounter = Win32GetWallClock();
+					real32 MSPerFrame = 1000.0f * Win32GetSecondsElapsed(lastCounter, endCounter);
+					lastCounter = endCounter;
 
 					uint64 endCycleCount = __rdtsc();
 					uint64 cyclesElapsed = endCycleCount - lastCycleCount;
 					lastCycleCount = endCycleCount;
+
+					//real32 fps = (real32)g_perf_count_frequency / (real32)counterElapsed;
+					real32 MCPF = (real32)cyclesElapsed / 1000000.0f;
 				}
 			}
 			else
