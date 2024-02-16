@@ -1,6 +1,9 @@
 @echo off
 ::subst w: "C:\Users\posav\source\repos"
+set CompilerFlags=-nologo -Gm- -GR- -EHa- -Oi -DBAREBONES_INTERNAL=0 -FC -Z7
+set LinkerFlags= -opt:ref user32.lib gdi32.lib winmm.lib
+
 IF NOT EXIST ..\..\build mkdir ..\..\build
 pushd ..\..\build
-cl -nologo -Gm- -GR- -EHa- -Oi -DBAREBONES_INTERNAL=0 -FC -Z7 w:/WindowsGame/BareBones/code/win32_barebones.cpp user32.lib gdi32.lib winmm.lib
+cl %CompilerFlags% ..\BareBones\code\win32_barebones.cpp /link %LinkerFlags%
 popd

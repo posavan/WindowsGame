@@ -589,7 +589,8 @@ int main(HINSTANCE Instance) {
 	g_perf_count_frequency = perfCountFreqResult.QuadPart;
 
 	UINT desiredSchedulerMS = 1;
-	bool32 sleepIsGranular = timeBeginPeriod(desiredSchedulerMS) == TIMERR_NOERROR;
+	//bool32 sleepIsGranular = timeBeginPeriod(desiredSchedulerMS) == TIMERR_NOERROR;//linker breaks if above used
+	bool32 sleepIsGranular = true;
 
 	Win32LoadXInput();
 
@@ -613,14 +614,9 @@ int main(HINSTANCE Instance) {
 			WindowClass.lpszClassName,
 			"Bare Bones",
 			WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-			CW_USEDEFAULT,
-			CW_USEDEFAULT,
-			CW_USEDEFAULT,
-			CW_USEDEFAULT,
-			0,
-			0,
-			Instance,
-			0);
+			CW_USEDEFAULT,CW_USEDEFAULT,
+			CW_USEDEFAULT,CW_USEDEFAULT,
+			0,0,Instance,0);
 		if (Window)
 		{
 			HDC DeviceContext = GetDC(Window);
@@ -636,9 +632,10 @@ int main(HINSTANCE Instance) {
 
 			Win32InitDSound(Window, soundOutput.samplesPerSec, soundOutput.bufferSize);
 			Win32ClearBuffer(&soundOutput);
+			g_running = true;
 			g_secondary_buffer->Play(0, 0, DSBPLAY_LOOPING);
 			int16* samples = (int16*)VirtualAlloc(0, soundOutput.bufferSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-
+			
 #if BAREBONES_INTERNAL
 			LPVOID BaseAddress = (LPVOID)Terabytes((uint64)2);
 #else
@@ -657,8 +654,6 @@ int main(HINSTANCE Instance) {
 
 			if (samples && gameMemory.permStorage && gameMemory.tempStorage)
 			{
-				g_running = true;
-
 				game_input gameInput[2] = {};
 				game_input* newInput = &gameInput[0];
 				game_input* oldInput = &gameInput[1];
@@ -800,28 +795,24 @@ int main(HINSTANCE Instance) {
 						}
 					}
 
-					DWORD byteToLock;
-					DWORD targetCursor;
+					DWORD byteToLock =0;
+					DWORD targetCursor = 0;
 					DWORD bytesToWrite = 0;
-					DWORD playCursor;
-					DWORD writeCursor;
+					DWORD playCursor = 0;
+					DWORD writeCursor = 0;
 					bool32 soundIsValid = false;
 					if (SUCCEEDED(g_secondary_buffer->GetCurrentPosition(&playCursor, &writeCursor)))
 					{
 						byteToLock = ((soundOutput.runningSampleIndex * soundOutput.bytesPerSample)
 							% soundOutput.bufferSize);
-						targetCursor = playCursor +
-							(soundOutput.latencySample * soundOutput.bytesPerSample) %
+						targetCursor = (playCursor +
+							(soundOutput.latencySample * soundOutput.bytesPerSample)) %
 							soundOutput.bufferSize;
 
-						if (byteToLock == playCursor)
-						{
-							bytesToWrite = 0;
-						}
-						else if (byteToLock > playCursor)
+						if (byteToLock > targetCursor)
 						{
 							bytesToWrite = (soundOutput.bufferSize - byteToLock);
-							bytesToWrite += playCursor;
+							bytesToWrite += targetCursor;
 						}
 						else
 						{
@@ -870,11 +861,12 @@ int main(HINSTANCE Instance) {
 						secondsElapsedPerFrame = Win32GetSecondsElapsed(
 							lastCounter, Win32GetWallClock());
 					}
+					//for testing
+					g_secondary_buffer->GetCurrentPosition(&playCursor, &writeCursor);
 
 					win32_window_dimensions dimensions = Win32GetWindowDimensions(Window);
 					Win32DisplayBufferToWindow(
-						&g_back_buffer,
-						DeviceContext,
+						&g_back_buffer,DeviceContext,
 						dimensions.width, dimensions.height);
 
 					//Swap(oldInput, newInput);
