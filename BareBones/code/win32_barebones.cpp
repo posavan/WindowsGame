@@ -26,26 +26,30 @@ typedef double real64;
 #include "barebones.cpp"
 
 #include <windows.h>
-#include <stdio.h>
 #include <malloc.h>
 #include <xinput.h>
 #include <dsound.h>
+#include <stdio.h>
 
 #include "win32_barebones.h"
 #pragma endregion
 
 #pragma region Globals
-global_variable bool32 g_running;
+global_variable bool g_running = true;
+global_variable bool g_debug_pause_render = false;
 global_variable win32_offscreen_buffer g_back_buffer;
-global_variable LPDIRECTSOUNDBUFFER g_secondary_buffer;
-global_variable int64 g_perf_count_frequency;
+global_variable LPDIRECTSOUNDBUFFER g_sound_buffer;
+global_variable uint64 g_perf_count_freq;
+global_variable bool g_show_cursor;
 #pragma endregion
 
 #pragma region Controller
-#define XINPUT_GET_STATE(name) DWORD WINAPI name(DWORD dwUserIndex, XINPUT_STATE* pState)
+#define XINPUT_GET_STATE(name) \
+DWORD WINAPI name(DWORD dwUserIndex, XINPUT_STATE* pState)
 typedef XINPUT_GET_STATE(x_input_get_state);
 
-#define XINPUT_SET_STATE(name) DWORD WINAPI name(DWORD dwUserIndex, XINPUT_VIBRATION* pVibration)
+#define XINPUT_SET_STATE(name) \
+DWORD WINAPI name(DWORD dwUserIndex, XINPUT_VIBRATION* pVibration)
 typedef XINPUT_SET_STATE(x_input_set_state);
 
 XINPUT_GET_STATE(XInputGetStateStub) { return(ERROR_DEVICE_NOT_CONNECTED); }
@@ -59,100 +63,11 @@ global_variable x_input_set_state* xInputSetState_ = XInputSetStateStub;
 #pragma endregion
 
 #pragma region Sound
-#define DIRECT_SOUND_CREATE(name) HRESULT WINAPI name(LPCGUID pcGuidDevice, LPDIRECTSOUND *ppDS, LPUNKNOWN pUnkOuter)
+#define DIRECT_SOUND_CREATE(name) \
+HRESULT WINAPI name(LPCGUID pcGuidDevice, LPDIRECTSOUND *ppDS, LPUNKNOWN pUnkOuter)
 typedef DIRECT_SOUND_CREATE(direct_sound_create);
 
 #pragma endregion
-
-#if BAREBONES_INTERNAL
-internal_function void* DEBUGPlatformFreeFileMemory(void* Memory)
-{
-	if (Memory)
-	{
-		VirtualFree(Memory, 0, MEM_RELEASE);
-	}
-}
-
-internal_function debug_read_file_result DEBUGPlatformReadEntireFile(char* filename)
-{
-	debug_read_file_result Result = {};
-
-	HANDLE FileHandle = CreateFileA(
-		filename,
-		GENERIC_READ, FILE_SHARE_READ, 0,
-		OPEN_EXISTING, 0, 0);
-	if (FileHandle != INVALID_HANDLE_VALUE)
-	{
-		LARGE_INTEGER FileSize;
-		if (GetFileSizeEx(FileHandle, &FileSize))
-		{
-			Assert(FileSize.QuadPart <= 0xFFFFFFFF);
-			uint32 FileSize32 = (uint32)FileSize.QuadPart;
-			Result.Contents = VirtualAlloc(0, FileSize32,
-				MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-			if (Result)
-			{
-				DWORD BytesRead;
-				if (ReadFile(
-					FileHandle,
-					Result.Contents, FileSize.QuadPart,
-					&BytesRead, 0))
-				{
-					// File read success
-					Result.ContentsSize = FileSize32;
-				}
-				else
-				{
-					DEBUGPlatformFreeFileMemory(Result.Contents);
-					Result.Contents = 0;
-				}
-			}
-			else
-			{
-				// logging
-			}
-		}
-		else
-		{
-			// logging
-		}
-
-		CloseHandle(FileHandle);
-	}
-
-	return Result;
-}
-
-internal_function bool32 DEBUGPlatformWriteEntireFile(char* Filename, uint32 MemorySize, void* Memory)
-{
-	bool32 Result = false;
-
-	HANDLE FileHandle = CreateFileA(
-		Filename,
-		GENERIC_WRITE, 0, 0,
-		CREATE_ALWAYS, 0, 0);
-	if (FileHandle != INVALID_HANDLE_VALUE)
-	{
-		DWORD BytesWritten;
-		if (WriteFile(
-			FileHandle,
-			Memory, MemorySize,
-			&BytesWritten, 0))
-		{
-			Result = (BytesWritten == NemorySize);
-		}
-		else
-		{
-			DEBUGPlatformFreeFileMemory(Result);
-			Result = false;
-		}
-
-		CloseHandle(FileHandle);
-	}
-
-	return Result;
-}
-#endif BAREBONES_INTERNAL
 
 inline LARGE_INTEGER Win32GetWallClock()
 {
@@ -164,7 +79,7 @@ inline LARGE_INTEGER Win32GetWallClock()
 inline real32 Win32GetSecondsElapsed(LARGE_INTEGER start, LARGE_INTEGER end)
 {
 	real32 result = (real32)(end.QuadPart - start.QuadPart) /
-		(real32)g_perf_count_frequency;
+		(real32)g_perf_count_freq;
 	return result;
 }
 
@@ -173,18 +88,8 @@ internal_function void Win32LoadXInput()
 	HMODULE library = LoadLibraryA("xinput1_4.dll");
 	if (library)
 	{
-		XInputGetState = (x_input_get_state*)GetProcAddress(library, "XInputGetState");
-		if (!XInputGetState) {
-			XInputGetState = XInputGetStateStub;
-		}
+		xInputGetState_ = (x_input_get_state*)GetProcAddress(library, "XInputGetState");
 		xInputSetState_ = (x_input_set_state*)GetProcAddress(library, "XInputSetState");
-		if (!XInputSetState) {
-			XInputSetState = XInputSetStateStub;
-		}
-		else
-		{
-			// log diagnostic
-		}
 	}
 	else
 	{
@@ -192,16 +97,20 @@ internal_function void Win32LoadXInput()
 	}
 }
 
-internal_function void Win32InitDSound(HWND Window, int32 samplesPerSecond, int32 bufferSize)
+internal_function void Win32InitDSound(HWND window, int32 samplesPerSecond, int32 bufferSize)
 {
 	HMODULE library = LoadLibraryA("dsound.dll");
 	if (library)
 	{
-		direct_sound_create* DirectSoundCreate = (direct_sound_create*)GetProcAddress(library, "DirectSoundCreate");
+		direct_sound_create* directSoundCreate = (direct_sound_create*)GetProcAddress(library, "DirectSoundCreate");
 
 		LPDIRECTSOUND directSound;
-		if (DirectSoundCreate && SUCCEEDED(DirectSoundCreate(0, &directSound, 0)))
+		if (SUCCEEDED(directSoundCreate(0, &directSound, 0)))
 		{
+			if (SUCCEEDED(directSound->SetCooperativeLevel(window, DSSCL_PRIORITY))) {
+				// success
+			}
+
 			WAVEFORMATEX waveFormat = {};
 			waveFormat.wFormatTag = WAVE_FORMAT_PCM;
 			waveFormat.nChannels = 2;
@@ -209,24 +118,17 @@ internal_function void Win32InitDSound(HWND Window, int32 samplesPerSecond, int3
 			waveFormat.wBitsPerSample = 16;
 			waveFormat.nBlockAlign = (waveFormat.nChannels * waveFormat.wBitsPerSample) / 8;
 			waveFormat.nAvgBytesPerSec = waveFormat.nSamplesPerSec * waveFormat.nBlockAlign;
-			waveFormat.cbSize = 0;
 
-			if (SUCCEEDED(directSound->SetCooperativeLevel(Window, DSSCL_PRIORITY)))
+			DSBUFFERDESC bufferDescription = {};
+			bufferDescription.dwSize = sizeof(bufferDescription);
+			bufferDescription.dwFlags = DSBCAPS_PRIMARYBUFFER;
+			LPDIRECTSOUNDBUFFER primaryBuffer;
+			if (SUCCEEDED(
+				directSound->CreateSoundBuffer(&bufferDescription, &primaryBuffer, 0)))
 			{
-				DSBUFFERDESC bufferDescription = {};
-				bufferDescription.dwSize = sizeof(bufferDescription);
-				bufferDescription.dwFlags = DSBCAPS_PRIMARYBUFFER;
-				LPDIRECTSOUNDBUFFER primaryBuffer;
-				if (SUCCEEDED(directSound->CreateSoundBuffer(&bufferDescription, &primaryBuffer, 0)))
+				if (SUCCEEDED(primaryBuffer->SetFormat(&waveFormat)))
 				{
-					if (SUCCEEDED(primaryBuffer->SetFormat(&waveFormat)))
-					{
-						OutputDebugStringA("Primary buffer format was set.\n");
-					}
-					else
-					{
-						// log diagnostic
-					}
+					OutputDebugStringA("Primary buffer format was set.\n");
 				}
 				else
 				{
@@ -237,13 +139,13 @@ internal_function void Win32InitDSound(HWND Window, int32 samplesPerSecond, int3
 			{
 				// log diagnostic
 			}
-
-			DSBUFFERDESC bufferDescription = {};
+			
 			bufferDescription.dwSize = sizeof(bufferDescription);
 			bufferDescription.dwFlags = 0;
 			bufferDescription.dwBufferBytes = bufferSize;
 			bufferDescription.lpwfxFormat = &waveFormat;
-			if (SUCCEEDED(directSound->CreateSoundBuffer(&bufferDescription, &g_secondary_buffer, 0)))
+			if (SUCCEEDED(
+				directSound->CreateSoundBuffer(&bufferDescription, &g_sound_buffer, 0)))
 			{
 				OutputDebugStringA("Primary buffer format was set.\n");
 			}
@@ -270,86 +172,91 @@ internal_function void Win32ClearBuffer(win32_sound_output* soundOutput)
 	DWORD Region1Size;
 	VOID* Region2;
 	DWORD Region2Size;
-	if (SUCCEEDED(g_secondary_buffer->Lock(
+
+	if (SUCCEEDED(g_sound_buffer->Lock(
 		0, soundOutput->bufferSize,
 		&Region1, &Region1Size,
 		&Region2, &Region2Size,
 		0)))
 	{
-		uint8* destSample = (uint8*)Region1;
+		uint8* out = (uint8*)Region1;
 		for (DWORD byteIndex = 0; byteIndex < Region1Size; ++byteIndex)
 		{
-			*destSample++ = 0;
+			*out++ = 0;
 		}
 
-		destSample = (uint8*)Region2;
+		out = (uint8*)Region2;
+
 		for (DWORD byteIndex = 0; byteIndex < Region2Size; ++byteIndex)
 		{
-			*destSample++ = 0;
+			*out++ = 0;
 		}
 
-		g_secondary_buffer->Unlock(Region1, Region1Size, Region2, Region2Size);
+		g_sound_buffer->Unlock(Region1, Region1Size, Region2, Region2Size);
 	}
 }
 
 internal_function void Win32FillSoundBuffer(
 	win32_sound_output* soundOutput,
 	game_sound_output_buffer* sourceBuffer,
-	DWORD byteToLock,
-	DWORD bytesToWrite)
+	DWORD lockOffset,
+	DWORD byteToLock)
 {
 	VOID* Region1;
 	DWORD Region1Size;
 	VOID* Region2;
 	DWORD Region2Size;
 
-	if (SUCCEEDED(g_secondary_buffer->Lock(
-		byteToLock, bytesToWrite,
+	if (SUCCEEDED(g_sound_buffer->Lock(
+		lockOffset, byteToLock,
 		&Region1, &Region1Size,
 		&Region2, &Region2Size,
 		0)))
 	{
+		int16* dest = (int16*)Region1;
+		int16* src = sourceBuffer->samples;
 		DWORD region1SampleCount = Region1Size / soundOutput->bytesPerSample;
-		int16* destSample = (int16*)Region1;
-		int16* srcSample = sourceBuffer->samples;
 		for (DWORD SampleIndex = 0; SampleIndex < region1SampleCount; ++SampleIndex)
 		{
-			*destSample++ = *srcSample++;
-			*destSample++ = *srcSample++;
-			++soundOutput->runningSampleIndex;
+			*dest++ = *src++;
+			*dest++ = *src++;
+			soundOutput->runningSampleIndex++;
 		}
 
+		dest = (int16*)Region2;
 		DWORD region2SampleCount = Region2Size / soundOutput->bytesPerSample;
-		destSample = (int16*)Region2;
 		for (DWORD SampleIndex = 0; SampleIndex < region2SampleCount; ++SampleIndex)
 		{
-			*destSample++ = *srcSample++;
-			*destSample++ = *srcSample++;
-			++soundOutput->runningSampleIndex;
+			*dest++ = *src++;
+			*dest++ = *src++;
+			soundOutput->runningSampleIndex++;
 		}
 
-		g_secondary_buffer->Unlock(
+		g_sound_buffer->Unlock(
 			Region1, Region1Size,
 			Region2, Region2Size);
 	}
 }
 
-internal_function void Win32ProcessKeyboardInput(
+internal_function void Win32ProcessKeyboardButtonState(
 	game_button_state* newState,
 	bool32 isDown)
 {
-	newState->endedDown = isDown;
-	++newState->halfTransitionCount;
+	if (newState->endedDown != isDown) {
+		newState->endedDown = isDown;
+		newState->halfTransitionCount++;
+	}
 }
 
-internal_function void Win32ProcessXInputDigitalButton(
+internal_function void Win32ProcessXInputButtonState(
 	game_button_state* oldState,
 	game_button_state* newState,
-	DWORD XInputButtonState,
+	DWORD buttons,
 	DWORD buttonBit)
 {
-	newState->endedDown = ((XInputButtonState & buttonBit) == buttonBit);
-	newState->halfTransitionCount = (oldState->endedDown != newState->endedDown) ? 1 : 0;
+	newState->halfTransitionCount
+		= oldState->endedDown == newState->endedDown ? 0 : 1;
+	newState->endedDown = buttons & buttonBit;
 }
 
 internal_function real32 Win32ProcessXInputStickValue(SHORT thumbStick,
@@ -372,99 +279,124 @@ internal_function real32 Win32ProcessXInputStickValue(SHORT thumbStick,
 	return result;
 }
 
-internal_function void Win32ProcessPendingMessages(game_controller_input* KeyboardController)
+internal_function void Win32ProcessMessages(game_controller_input* keyboardController)
 {
-	MSG Message;
-	while (PeekMessage(&Message, 0, 0, 0, PM_REMOVE))
-	{
-		switch (Message.message)
-		{
-		case WM_QUIT:
-		{
-			g_running = false;
-			break;
-		}
+	MSG message = {};
 
+	while (PeekMessageA(&message, 0, 0, 0, PM_REMOVE))
+	{
+		switch (message.message)
+		{
 		case WM_SYSKEYDOWN:
 		case WM_SYSKEYUP:
-		case WM_KEYDOWN:
 		case WM_KEYUP:
+		case WM_KEYDOWN:
 		{
-			uint32 VKCode = (uint32)Message.wParam;
-			bool32 wasDown = ((Message.lParam & (1 << 30)) != 0);
-			bool32 isDown = ((Message.lParam & (1 << 31)) == 0);
-			if (wasDown != isDown)
+			uint32 VKCode = (uint32)message.wParam;
+			bool32 wasDown = (message.lParam & (1 << 30)) != 0;
+			bool32 isDown = (message.lParam & (1 << 31)) == 0;
+
+			if (isDown)
 			{
-				if (VKCode == 'W')
-				{
-					Win32ProcessKeyboardInput(
-						&KeyboardController->moveUp, isDown);
+				bool32 isAltDown = message.lParam & (1 << 29);
+
+				if (VKCode == VK_F4 && isAltDown) {
+					g_running = false;
 				}
-				else if (VKCode == 'A')
+
+				if (VKCode == VK_RETURN && isAltDown)
 				{
-					Win32ProcessKeyboardInput(
-						&KeyboardController->moveLeft, isDown);
-				}
-				else if (VKCode == 'S')
-				{
-					Win32ProcessKeyboardInput(
-						&KeyboardController->moveDown, isDown);
-				}
-				else if (VKCode == 'D')
-				{
-					Win32ProcessKeyboardInput(
-						&KeyboardController->moveRight, isDown);
-				}
-				else if (VKCode == 'Q')
-				{
-					Win32ProcessKeyboardInput(
-						&KeyboardController->leftShoulder, isDown);
-				}
-				else if (VKCode == 'E')
-				{
-					Win32ProcessKeyboardInput(
-						&KeyboardController->rightShoulder, isDown);
-				}
-				else if (VKCode == VK_UP)
-				{
-					Win32ProcessKeyboardInput(
-						&KeyboardController->actDown, isDown);
-				}
-				else if (VKCode == VK_LEFT)
-				{
-					Win32ProcessKeyboardInput(
-						&KeyboardController->actLeft, isDown);
-				}
-				else if (VKCode == VK_DOWN)
-				{
-					Win32ProcessKeyboardInput(
-						&KeyboardController->actDown, isDown);
-				}
-				else if (VKCode == VK_RIGHT)
-				{
-					Win32ProcessKeyboardInput(
-						&KeyboardController->actRight, isDown);
-				}
-				else if (VKCode == VK_ESCAPE)
-				{
-				}
-				else if (VKCode == VK_SPACE)
-				{
+					//ToggleFullscreen(message.hwnd);
 				}
 			}
 
-			bool32 AltKeyDown = (Message.lParam & (1 << 29));
-			if ((VKCode == VK_F4) && AltKeyDown)
-			{
-				g_running = false;
+			if (wasDown != isDown) {
+				switch (VKCode) {
+				case 'W': {
+					Win32ProcessKeyboardButtonState(&keyboardController->moveUp,
+						isDown);
+					break;
+				}
+				case 'A': {
+					Win32ProcessKeyboardButtonState(&keyboardController->moveLeft,
+						isDown);
+					break;
+				}
+				case 'S': {
+					Win32ProcessKeyboardButtonState(&keyboardController->moveDown,
+						isDown);
+					break;
+				}
+				case 'D': {
+					Win32ProcessKeyboardButtonState(&keyboardController->moveRight,
+						isDown);
+					break;
+				}
+				case 'P': {
+					if (message.message == WM_KEYDOWN) {
+						g_debug_pause_render = !g_debug_pause_render;
+					}
+				};
+
+				case VK_UP: {
+					Win32ProcessKeyboardButtonState(&keyboardController->actUp,
+						isDown);
+					break;
+				}
+
+				case VK_DOWN: {
+					Win32ProcessKeyboardButtonState(&keyboardController->actDown,
+						isDown);
+					break;
+				}
+
+				case VK_LEFT: {
+					Win32ProcessKeyboardButtonState(&keyboardController->actLeft,
+						isDown);
+					break;
+				}
+
+				case VK_RIGHT: {
+					Win32ProcessKeyboardButtonState(&keyboardController->actRight,
+						isDown);
+					break;
+				}
+
+				case VK_ESCAPE: {
+					Win32ProcessKeyboardButtonState(&keyboardController->back,
+						isDown);
+					break;
+				}
+
+				case VK_SPACE: {
+					Win32ProcessKeyboardButtonState(&keyboardController->start,
+						isDown);
+					break;
+				}
+
+							 // left shoulder
+				case 'Q': {
+					Win32ProcessKeyboardButtonState(&keyboardController->leftShoulder,
+						isDown);
+					break;
+				}
+
+						// right shoulder
+				case 'E': {
+					Win32ProcessKeyboardButtonState(
+						&keyboardController->rightShoulder,
+						isDown);
+					break;
+				}
+				}
 			}
 			break;
 		}
 
 		default:
 		{
-			TranslateMessage(&Message);
-			DispatchMessageA(&Message);
+			TranslateMessage(&message);
+			DispatchMessageA(&message);
 			break;
 		}
 		}
@@ -557,7 +489,7 @@ internal_function LRESULT CALLBACK Win32MainWindowCallback(
 	case WM_SYSKEYUP:
 	case WM_KEYDOWN:
 	case WM_KEYUP:
-	{break;}
+	{ break; }
 
 	case WM_PAINT:
 	{
@@ -586,7 +518,7 @@ internal_function LRESULT CALLBACK Win32MainWindowCallback(
 int main(HINSTANCE Instance) {
 	LARGE_INTEGER perfCountFreqResult;
 	QueryPerformanceFrequency(&perfCountFreqResult);
-	g_perf_count_frequency = perfCountFreqResult.QuadPart;
+	g_perf_count_freq = perfCountFreqResult.QuadPart;
 
 	UINT desiredSchedulerMS = 1;
 	//bool32 sleepIsGranular = timeBeginPeriod(desiredSchedulerMS) == TIMERR_NOERROR;//linker breaks if above used
@@ -614,9 +546,9 @@ int main(HINSTANCE Instance) {
 			WindowClass.lpszClassName,
 			"Bare Bones",
 			WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-			CW_USEDEFAULT,CW_USEDEFAULT,
-			CW_USEDEFAULT,CW_USEDEFAULT,
-			0,0,Instance,0);
+			CW_USEDEFAULT, CW_USEDEFAULT,
+			CW_USEDEFAULT, CW_USEDEFAULT,
+			0, 0, Instance, 0);
 		if (Window)
 		{
 			HDC DeviceContext = GetDC(Window);
@@ -633,9 +565,9 @@ int main(HINSTANCE Instance) {
 			Win32InitDSound(Window, soundOutput.samplesPerSec, soundOutput.bufferSize);
 			Win32ClearBuffer(&soundOutput);
 			g_running = true;
-			g_secondary_buffer->Play(0, 0, DSBPLAY_LOOPING);
+			g_sound_buffer->Play(0, 0, DSBPLAY_LOOPING);
 			int16* samples = (int16*)VirtualAlloc(0, soundOutput.bufferSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-			
+
 #if BAREBONES_INTERNAL
 			LPVOID BaseAddress = (LPVOID)Terabytes((uint64)2);
 #else
@@ -675,7 +607,7 @@ int main(HINSTANCE Instance) {
 							oldKeyboardController->buttons[buttonIndex].endedDown;
 					}
 
-					Win32ProcessPendingMessages(newKeyboardController);
+					Win32ProcessMessages(newKeyboardController);
 
 					// Controller
 					DWORD maxControllerCount = XUSER_MAX_COUNT;
@@ -731,52 +663,52 @@ int main(HINSTANCE Instance) {
 							}
 
 							real32 deadzone = 0.5f;
-							Win32ProcessXInputDigitalButton(
+							Win32ProcessXInputButtonState(
 								&oldController->moveLeft,
 								&newController->moveLeft,
 								(newController->stickAverageX < -deadzone ? 1 : 0),
 								1);
-							Win32ProcessXInputDigitalButton(
+							Win32ProcessXInputButtonState(
 								&oldController->moveRight,
 								&newController->moveRight,
 								(newController->stickAverageX > deadzone ? 1 : 0),
 								1);
 
-							Win32ProcessXInputDigitalButton(
+							Win32ProcessXInputButtonState(
 								&oldController->moveDown,
 								&newController->moveDown,
 								(newController->stickAverageY < -deadzone ? 1 : 0),
 								1);
 
-							Win32ProcessXInputDigitalButton(
+							Win32ProcessXInputButtonState(
 								&oldController->moveUp,
 								&newController->moveUp,
 								(newController->stickAverageY > deadzone ? 1 : 0),
 								1);
 
-							Win32ProcessXInputDigitalButton(
+							Win32ProcessXInputButtonState(
 								&oldController->actDown, &newController->actDown,
 								pad->wButtons, XINPUT_GAMEPAD_A);
-							Win32ProcessXInputDigitalButton(
+							Win32ProcessXInputButtonState(
 								&oldController->actRight, &newController->actRight,
 								pad->wButtons, XINPUT_GAMEPAD_B);
-							Win32ProcessXInputDigitalButton(
+							Win32ProcessXInputButtonState(
 								&oldController->actLeft, &newController->actLeft,
 								pad->wButtons, XINPUT_GAMEPAD_X);
-							Win32ProcessXInputDigitalButton(
+							Win32ProcessXInputButtonState(
 								&oldController->actUp, &newController->actUp,
 								pad->wButtons, XINPUT_GAMEPAD_Y);
 
-							Win32ProcessXInputDigitalButton(
+							Win32ProcessXInputButtonState(
 								&oldController->leftShoulder, &newController->leftShoulder,
 								pad->wButtons, XINPUT_GAMEPAD_LEFT_SHOULDER);
-							Win32ProcessXInputDigitalButton(
+							Win32ProcessXInputButtonState(
 								&oldController->rightShoulder, &newController->rightShoulder,
 								pad->wButtons, XINPUT_GAMEPAD_RIGHT_SHOULDER);
-							Win32ProcessXInputDigitalButton(
+							Win32ProcessXInputButtonState(
 								&oldController->start, &newController->start,
 								pad->wButtons, XINPUT_GAMEPAD_START);
-							Win32ProcessXInputDigitalButton(
+							Win32ProcessXInputButtonState(
 								&oldController->back, &newController->back,
 								pad->wButtons, XINPUT_GAMEPAD_BACK);
 
@@ -795,13 +727,13 @@ int main(HINSTANCE Instance) {
 						}
 					}
 
-					DWORD byteToLock =0;
+					DWORD byteToLock = 0;
 					DWORD targetCursor = 0;
 					DWORD bytesToWrite = 0;
 					DWORD playCursor = 0;
 					DWORD writeCursor = 0;
 					bool32 soundIsValid = false;
-					if (SUCCEEDED(g_secondary_buffer->GetCurrentPosition(&playCursor, &writeCursor)))
+					if (SUCCEEDED(g_sound_buffer->GetCurrentPosition(&playCursor, &writeCursor)))
 					{
 						byteToLock = ((soundOutput.runningSampleIndex * soundOutput.bytesPerSample)
 							% soundOutput.bufferSize);
@@ -862,11 +794,11 @@ int main(HINSTANCE Instance) {
 							lastCounter, Win32GetWallClock());
 					}
 					//for testing
-					g_secondary_buffer->GetCurrentPosition(&playCursor, &writeCursor);
+					g_sound_buffer->GetCurrentPosition(&playCursor, &writeCursor);
 
 					win32_window_dimensions dimensions = Win32GetWindowDimensions(Window);
 					Win32DisplayBufferToWindow(
-						&g_back_buffer,DeviceContext,
+						&g_back_buffer, DeviceContext,
 						dimensions.width, dimensions.height);
 
 					//Swap(oldInput, newInput);

@@ -71,17 +71,6 @@ internal_function void GameUpdateAndRender(
 	game_state* gameState = (game_state*)memory->permStorage;
 	if (!memory->isInitialized)
 	{
-#if BAREBONES_INTERNAL
-		char* filename = __FILE__;
-
-		debug_read_file_result BitmapMemory = DEBUGPlatformReadEntireFile(filename);
-		if (BitmapMemory)
-		{
-			DEBUGPlatformWriteEntireFile("test.out", File.ContentsSize, FIle.Contents);
-			DEBUGPlatformFreeFileMemory(File.Contents);
-		}
-#endif BAREBONES_INTERNAL
-
 		gameState->toneHz = 256;
 
 		memory->isInitialized = true;
