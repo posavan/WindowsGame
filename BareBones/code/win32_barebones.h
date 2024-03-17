@@ -45,8 +45,8 @@ struct win32_game_code
 	HMODULE gameDLL;
 	FILETIME gameDLLLastWriteTime;
 	bool32 isValid;
-	//game_update_video* gameUpdateVideo;
-	//game_update_audio* gameUpdateAudio;
+	game_update_video* gameUpdateVideo;
+	game_update_audio* gameUpdateAudio;
 };
 
 #define WIN32_MAX_PATH MAX_PATH

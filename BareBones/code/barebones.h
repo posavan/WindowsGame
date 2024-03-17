@@ -7,6 +7,29 @@
 
 #define PI32 3.14159265359
 
+#include <math.h>
+#include <stdint.h>
+
+#define internal_function static
+#define local_persist static
+#define global_variable static
+
+#define pi32 3.14159265359f
+
+typedef int8_t int8;
+typedef int16_t int16;
+typedef int32_t int32;
+typedef int64_t int64;
+typedef int32 bool32;
+
+typedef uint8_t uint8;
+typedef uint16_t uint16;
+typedef uint32_t uint32;
+typedef uint64_t uint64;
+
+typedef float real32;
+typedef double real64;
+
 #define Kilobytes(Value) ((Value)*1024LL)
 #define Megabytes(Value) (Kilobytes(Value)*1024LL)
 #define Gigabytes(Value) (Megabytes(Value)*1024LL)
@@ -81,12 +104,22 @@ struct game_memory
 	void* tempStorage;
 };
 
-// @params: timing, controller/keyboard input, bitmap buffer, sound buffer
-internal_function void GameUpdateAndRender(
-	game_memory* memory,
-	game_offscreen_buffer* buffer,
-	game_sound_output_buffer* soundBuffer,
-	game_input* gameInput);
+// @params: timing, controller/keyboard input, bitmap buffer
+#define GAME_UPDATE_AND_RENDER(name) void name( \
+	game_memory* memory, game_input* input, \
+	game_offscreen_buffer* buffer)
+typedef GAME_UPDATE_AND_RENDER(game_update_video);
+GAME_UPDATE_AND_RENDER(GameUpdateAndRenderStub)
+{
+}
+
+#define GAME_GET_SOUND_SAMPLES(name) void name( \
+	game_memory* memory, \
+	game_sound_output_buffer* soundBuffer)
+typedef GAME_GET_SOUND_SAMPLES(game_update_audio);
+GAME_GET_SOUND_SAMPLES(GameGetSoundSamplesStub)
+{
+}
 
 struct game_state
 {

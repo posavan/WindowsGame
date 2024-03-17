@@ -1,7 +1,7 @@
 #include "barebones.h"
 #include <math.h>
 
-internal_function void GameOutputSound(game_sound_output_buffer* soundBuffer, int toneHz)
+void GameOutputSound(game_sound_output_buffer* soundBuffer, int toneHz)
 {
 	local_persist real32 tSine;
 	int16 toneVolume = 600;
@@ -19,7 +19,7 @@ internal_function void GameOutputSound(game_sound_output_buffer* soundBuffer, in
 	}
 }
 
-internal_function void RenderColor(game_offscreen_buffer* buffer, int blueOffset, int greenOffset, int redOffset)
+void RenderColor(game_offscreen_buffer* buffer, int blueOffset, int greenOffset, int redOffset)
 {
 
 	uint8* row = (uint8*)buffer->memory;
@@ -43,7 +43,7 @@ internal_function void RenderColor(game_offscreen_buffer* buffer, int blueOffset
 	}
 }
 
-internal_function game_state* GameStartup(void)
+game_state* GameStartup(void)
 {
 	game_state* gameState = new game_state;
 	if (gameState)
@@ -57,16 +57,12 @@ internal_function game_state* GameStartup(void)
 	return(gameState);
 }
 
-internal_function void DeleteGameState(game_state* gameState)
+void DeleteGameState(game_state* gameState)
 {
 	//delete (gameState);
 }
 
-internal_function void GameUpdateAndRender(
-	game_memory* memory,
-	game_offscreen_buffer* buffer,
-	game_sound_output_buffer* soundBuffer,
-	game_input* gameInput)
+GAME_UPDATE_AND_RENDER(GameUpdateVideo)
 {
 	game_state* gameState = (game_state*)memory->permStorage;
 	if (!memory->isInitialized)
@@ -76,35 +72,40 @@ internal_function void GameUpdateAndRender(
 		memory->isInitialized = true;
 	}
 
-	for (int controlIndex = 0; controlIndex < ArrayCount(gameInput->controllers); 
+	for (int controlIndex = 0; controlIndex < ArrayCount(input->controllers); 
 		++controlIndex)
 	{
-		game_controller_input* input = &gameInput->controllers[controlIndex];
-		if (input->isAnalog)
+		game_controller_input* ctrlInput = &input->controllers[controlIndex];
+		if (ctrlInput->isAnalog)
 		{
 			// use analog movement
-			gameState->blueOffset += (int)(4.0f * (input->stickAverageX));
-			gameState->toneHz = 256 + (int)(128.0f * (input->stickAverageY));
+			gameState->blueOffset += (int)(4.0f * (ctrlInput->stickAverageX));
+			gameState->toneHz = 256 + (int)(128.0f * (ctrlInput->stickAverageY));
 		}
 		else
 		{
 			// use digital movement
-			if (&input->moveLeft.endedDown)
+			if (&ctrlInput->moveLeft.endedDown)
 			{
 				gameState->blueOffset -= 1;
 			}
-			if (&input->moveRight.endedDown)
+			if (&ctrlInput->moveRight.endedDown)
 			{
 				gameState->blueOffset += 1;
 			}
 		}
 
-		if (input->actDown.endedDown)
+		if (ctrlInput->actDown.endedDown)
 		{
 			++gameState->greenOffset;
 		}
 	}
 
-	GameOutputSound(soundBuffer, gameState->toneHz);
 	RenderColor(buffer, gameState->blueOffset, gameState->greenOffset, gameState->redOffset);
+}
+
+GAME_GET_SOUND_SAMPLES(GameUpdateAudio)
+{
+	game_state* gameState = (game_state*)memory->permStorage;
+	GameOutputSound(soundBuffer, gameState->toneHz);
 }

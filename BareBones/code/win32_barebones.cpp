@@ -1,29 +1,6 @@
 #pragma region Header
-#include <math.h>
-#include <stdint.h>
-
-#define internal_function static
-#define local_persist static
-#define global_variable static
-
-#define pi32 3.14159265359f
-
-typedef int8_t int8;
-typedef int16_t int16;
-typedef int32_t int32;
-typedef int64_t int64;
-typedef int32 bool32;
-
-typedef uint8_t uint8;
-typedef uint16_t uint16;
-typedef uint32_t uint32;
-typedef uint64_t uint64;
-
-typedef float real32;
-typedef double real64;
 
 #include "barebones.h"
-#include "barebones.cpp"
 
 #include <windows.h>
 #include <malloc.h>
@@ -80,6 +57,31 @@ inline real32 Win32GetSecondsElapsed(LARGE_INTEGER start, LARGE_INTEGER end)
 {
 	real32 result = (real32)(end.QuadPart - start.QuadPart) /
 		(real32)g_perf_count_freq;
+	return result;
+}
+
+internal_function win32_game_code Win32LoadGameCode()
+{
+	win32_game_code result = {};
+
+	result.gameUpdateVideo = GameUpdateAndRenderStub;
+	result.gameUpdateAudio = GameGetSoundSamplesStub;
+
+	result.gameDLL = LoadLibraryA("barebones.dll");
+	if (result.gameDLL)
+	{
+		result.gameUpdateVideo = (game_update_video*)GetProcAddress(result.gameDLL, "GameUpdateAndRender");
+		result.gameUpdateAudio = (game_update_audio*)GetProcAddress(result.gameDLL, "GameGetSoundSamples");
+
+		result.isValid = result.gameUpdateVideo && result.gameUpdateAudio;
+	}
+
+	if (result.isValid)
+	{
+		result.gameUpdateVideo = GameUpdateAndRenderStub;
+		result.gameUpdateAudio = GameGetSoundSamplesStub;
+	}
+
 	return result;
 }
 
@@ -516,6 +518,8 @@ internal_function LRESULT CALLBACK Win32MainWindowCallback(
 }
 
 int main(HINSTANCE Instance) {
+	win32_game_code game = Win32LoadGameCode();
+
 	LARGE_INTEGER perfCountFreqResult;
 	QueryPerformanceFrequency(&perfCountFreqResult);
 	g_perf_count_freq = perfCountFreqResult.QuadPart;
@@ -564,6 +568,7 @@ int main(HINSTANCE Instance) {
 
 			Win32InitDSound(Window, soundOutput.samplesPerSec, soundOutput.bufferSize);
 			Win32ClearBuffer(&soundOutput);
+
 			g_running = true;
 			g_sound_buffer->Play(0, 0, DSBPLAY_LOOPING);
 			int16* samples = (int16*)VirtualAlloc(0, soundOutput.bufferSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
@@ -573,7 +578,6 @@ int main(HINSTANCE Instance) {
 #else
 			LPVOID BaseAddress = 0;
 #endif
-
 			game_memory gameMemory = {};
 			gameMemory.permStorageSize = Megabytes(64);
 			gameMemory.tempStorageSize = Gigabytes(1);
@@ -727,6 +731,17 @@ int main(HINSTANCE Instance) {
 						}
 					}
 
+					game_offscreen_buffer buffer = {};
+					buffer.memory = g_back_buffer.memory;
+					buffer.width = g_back_buffer.width;
+					buffer.height = g_back_buffer.height;
+					buffer.pitch = g_back_buffer.pitch;
+					game.gameUpdateVideo(&gameMemory, newInput, &buffer);
+
+					LARGE_INTEGER workCounter = Win32GetWallClock();
+					real32 workSecondsElapsed = Win32GetSecondsElapsed(
+						lastCounter, workCounter);
+
 					DWORD byteToLock = 0;
 					DWORD targetCursor = 0;
 					DWORD bytesToWrite = 0;
@@ -758,22 +773,12 @@ int main(HINSTANCE Instance) {
 					soundBuffer.samplesPerSec = soundOutput.samplesPerSec;
 					soundBuffer.sampleCount = bytesToWrite / soundOutput.bytesPerSample;
 					soundBuffer.samples = samples;
-
-					game_offscreen_buffer buffer = {};
-					buffer.memory = g_back_buffer.memory;
-					buffer.width = g_back_buffer.width;
-					buffer.height = g_back_buffer.height;
-					buffer.pitch = g_back_buffer.pitch;
-					GameUpdateAndRender(&gameMemory, &buffer, &soundBuffer, newInput);
+					game.gameUpdateAudio(&gameMemory, &soundBuffer);
 
 					if (soundIsValid)
 					{
 						Win32FillSoundBuffer(&soundOutput, &soundBuffer, byteToLock, bytesToWrite);
 					}
-
-					LARGE_INTEGER workCounter = Win32GetWallClock();
-					real32 workSecondsElapsed = Win32GetSecondsElapsed(
-						lastCounter, workCounter);
 
 					real32 secondsElapsedPerFrame = workSecondsElapsed;
 					if (secondsElapsedPerFrame > targetSecondsPerFrame)
