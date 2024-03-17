@@ -1,21 +1,20 @@
 #include "barebones.h"
 #include <math.h>
 
-void GameOutputSound(game_sound_output_buffer* soundBuffer, int toneHz)
+void GameOutputSound(game_state* gameState, game_sound_output_buffer* soundBuffer, int toneHz)
 {
-	local_persist real32 tSine;
 	int16 toneVolume = 600;
-	int wavePeriod = soundBuffer->samplesPerSec / toneHz;
+	int wavePeriod = (soundBuffer->samplesPerSec/toneHz);
 	int16* sampleOut = soundBuffer->samples;
 
 	for (int SampleIndex = 0; SampleIndex < soundBuffer->sampleCount; ++SampleIndex)
 	{
-		real32 sineValue = sinf(tSine);
+		real32 sineValue = sinf(gameState->tSine);
 		int16 sampleValue = (int16)(sineValue * toneVolume);
 		//*sampleOut++ = sampleValue;//breaks here
 		//*sampleOut++ = sampleValue;
 
-		tSine += (2.0f * pi32 * 1.0f) / (real32)wavePeriod;
+		gameState->tSine += (2.0f * pi32 * 1.0f) / (real32)wavePeriod;
 	}
 }
 
@@ -36,7 +35,7 @@ void RenderColor(game_offscreen_buffer* buffer, int blueOffset, int greenOffset,
 			uint8 green = (y + greenOffset);
 			uint8 red = (0 + redOffset);
 
-			*pixel++ = (blue | (green << 8) | (red << 16));
+			*pixel++ = (blue | (green << 16) | (red << 16));
 		}
 
 		row += buffer->pitch;
@@ -107,5 +106,5 @@ GAME_UPDATE_AND_RENDER(GameUpdateVideo)
 GAME_GET_SOUND_SAMPLES(GameUpdateAudio)
 {
 	game_state* gameState = (game_state*)memory->permStorage;
-	GameOutputSound(soundBuffer, gameState->toneHz);
+	GameOutputSound(gameState, soundBuffer, gameState->toneHz);
 }

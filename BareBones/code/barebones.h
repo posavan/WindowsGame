@@ -127,6 +127,7 @@ struct game_state
 	int blueOffset;
 	int greenOffset;
 	int redOffset;
+	real32 tSine;
 };
 
 #endif

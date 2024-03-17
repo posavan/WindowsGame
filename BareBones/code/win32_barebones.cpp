@@ -64,10 +64,8 @@ internal_function win32_game_code Win32LoadGameCode()
 {
 	win32_game_code result = {};
 
-	result.gameUpdateVideo = GameUpdateAndRenderStub;
-	result.gameUpdateAudio = GameGetSoundSamplesStub;
-
-	result.gameDLL = LoadLibraryA("barebones.dll");
+	CopyFileA("barebones.exe", "barebones_temp.dll", FALSE);
+	result.gameDLL = LoadLibraryA("barebones_temp.dll");
 	if (result.gameDLL)
 	{
 		result.gameUpdateVideo = (game_update_video*)GetProcAddress(result.gameDLL, "GameUpdateAndRender");
@@ -76,13 +74,26 @@ internal_function win32_game_code Win32LoadGameCode()
 		result.isValid = result.gameUpdateVideo && result.gameUpdateAudio;
 	}
 
-	if (result.isValid)
+	if (!result.isValid)
 	{
 		result.gameUpdateVideo = GameUpdateAndRenderStub;
 		result.gameUpdateAudio = GameGetSoundSamplesStub;
 	}
 
 	return result;
+}
+
+internal_function void Win32UnloadGameCode(win32_game_code* game)
+{
+	if (game->gameDLL)
+	{
+		FreeLibrary(game->gameDLL);
+		game->gameDLL = 0;
+	}
+
+	game->gameDLL = (HMODULE) false;
+	game->gameUpdateVideo = GameUpdateAndRenderStub;
+	game->gameUpdateAudio = GameGetSoundSamplesStub;
 }
 
 internal_function void Win32LoadXInput()
@@ -596,9 +607,19 @@ int main(HINSTANCE Instance) {
 
 				LARGE_INTEGER lastCounter = Win32GetWallClock();
 
+				win32_game_code game = Win32LoadGameCode();
+				uint32 loadCounter = 120;
+
 				uint64 lastCycleCount = __rdtsc();
 				while (g_running)
 				{
+					if (loadCounter++ > 120)
+					{
+						Win32UnloadGameCode(&game);
+						game = Win32LoadGameCode();
+						loadCounter = 0;
+					}
+
 					game_controller_input* oldKeyboardController = &oldInput->controllers[0];
 					game_controller_input* newKeyboardController = &newInput->controllers[0];
 					*newKeyboardController = {};
